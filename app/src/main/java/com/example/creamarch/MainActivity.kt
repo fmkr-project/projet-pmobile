@@ -19,7 +19,15 @@ class MainActivity : ComponentActivity() {
 		enableEdgeToEdge()
 		setContent {
 			CreamarchTheme {
-				Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+				Scaffold(
+					topBar = {
+						MainTopBar()
+					},
+					bottomBar = {
+						MainBottomBar()
+					},
+					modifier = Modifier
+						.fillMaxSize()) { innerPadding ->
 					Greeting(
 						name = "Android",
 						modifier = Modifier.padding(innerPadding)
