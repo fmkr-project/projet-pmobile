@@ -27,12 +27,16 @@ class MainActivity : ComponentActivity() {
 						MainBottomBar()
 					},
 					modifier = Modifier
-						.fillMaxSize()) { innerPadding ->
-					Greeting(
-						name = "Android",
-						modifier = Modifier.padding(innerPadding)
-					)
-				}
+						.fillMaxSize(),// { innerPadding ->
+//					Greeting(
+//						name = "Android",
+//						modifier = Modifier.padding(innerPadding)
+//					)
+					content = { innerPadding ->
+						ExplorationMenu(
+							modifier = Modifier.padding(innerPadding)
+						) }
+				)
 			}
 		}
 	}

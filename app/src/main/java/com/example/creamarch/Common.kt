@@ -8,6 +8,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.FloatingActionButtonElevation
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
@@ -61,6 +63,7 @@ fun MainBottomBar(modifier: Modifier = Modifier)
 					.size(75.dp)
 					.padding(5.dp),
 				containerColor = Color.White,
+				elevation = FloatingActionButtonDefaults.elevation(0.dp)
 				) {
 				Text(
 					text = "C",
