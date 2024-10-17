@@ -1,15 +1,22 @@
 package com.example.creamarch
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.List
+import androidx.compose.material.icons.rounded.Face
+import androidx.compose.material.icons.rounded.List
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.twotone.Star
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.FloatingActionButtonElevation
+import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
@@ -53,9 +60,23 @@ fun MainBottomBar(modifier: Modifier = Modifier)
 			NavigationBarItem(
 				selected = false,
 				onClick = { /*TODO*/ },
-				icon = { /*TODO*/ },
-				label = { Text(text = "Lorem")}
+				icon = { Image(
+					imageVector = Icons.AutoMirrored.Rounded.List,
+					contentDescription = null
+				) },
+				label = { Text(text = "Équipe")}
 			)
+
+			NavigationBarItem(
+				selected = false,
+				onClick = { /*TODO*/ },
+				icon = { Icon(
+					imageVector = Icons.TwoTone.Star,
+					contentDescription = null
+				) },
+				label = { Text(text = "Collection")}
+			)
+
 			FloatingActionButton(
 				onClick = { /*TODO*/ },
 				shape = CircleShape,
@@ -71,11 +92,24 @@ fun MainBottomBar(modifier: Modifier = Modifier)
 					color = Color.Red,
 				)
 			}
+
 			NavigationBarItem(
 				selected = false,
 				onClick = { /*TODO*/ },
-				icon = { /*TODO*/ },
-				label = { Text(text = "Ipsum")}
+				icon = { Icon(
+					imageVector = Icons.Rounded.Face,
+					contentDescription = null
+				) },
+				label = { Text(text = "Joueur")}
+			)
+
+			NavigationBarItem(selected = false,
+				onClick = { /*TODO*/ },
+				icon = { Icon(
+					imageVector = Icons.Rounded.Settings,
+					contentDescription = null
+				) },
+				label = { Text(text = "Paramètres")}
 			)
 		}
 	}
