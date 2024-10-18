@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
 import com.example.creamarch.ui.theme.CreamarchTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,41 +20,8 @@ class MainActivity : ComponentActivity() {
 		enableEdgeToEdge()
 		setContent {
 			CreamarchTheme {
-				Scaffold(
-					topBar = {
-						MainTopBar()
-					},
-					bottomBar = {
-						MainBottomBar()
-					},
-					modifier = Modifier
-						.fillMaxSize(),// { innerPadding ->
-//					Greeting(
-//						name = "Android",
-//						modifier = Modifier.padding(innerPadding)
-//					)
-					content = { innerPadding ->
-						ExplorationMenu(
-							modifier = Modifier.padding(innerPadding)
-						) }
-				)
+				AppScreen()
 			}
 		}
-	}
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-	Text(
-		text = "Hello $name!",
-		modifier = modifier
-	)
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-	CreamarchTheme {
-		Greeting("Android")
 	}
 }
