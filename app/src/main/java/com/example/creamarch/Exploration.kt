@@ -79,7 +79,7 @@ fun ExplorationMenu(modifier: Modifier = Modifier)
 {
 	// Get the list of nearby creatures
 	// todo temp
-	var nearbyCreatures = (1..300).map { Dex.species.values.random().spawnNewCreature() }
+	var nearbyCreatures = (1..22).map { Dex.species.values.random().spawnNewCreature() }
 	print(nearbyCreatures)
 
 	// Compose

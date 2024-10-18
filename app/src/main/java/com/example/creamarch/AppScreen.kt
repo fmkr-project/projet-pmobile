@@ -32,8 +32,8 @@ fun AppScreen(
 			startDestination = BottomItem.Exploration.route
 		)
 		{
-			composable(BottomItem.Collection.route) { CollectionMenu() }
-			composable(BottomItem.Exploration.route) { ExplorationMenu() }
+			composable(BottomItem.Collection.route) { CollectionMenu(modifier = Modifier.padding(innerPadding)) }
+			composable(BottomItem.Exploration.route) { ExplorationMenu(modifier = Modifier.padding(innerPadding)) }
 		}
 	}
 }
