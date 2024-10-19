@@ -81,8 +81,13 @@ fun MainBottomBar(
 
 		Row(modifier = modifier) {
 			NavigationBarItem(
-				selected = false,
-				onClick = {  },
+				selected = currentRoute == BottomItem.Team.route,
+				onClick = {
+					navController.navigate(BottomItem.Team.route)
+					{
+
+					}
+				},
 				icon = { Image(
 					imageVector = Icons.AutoMirrored.Rounded.List,
 					contentDescription = null
