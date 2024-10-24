@@ -90,8 +90,10 @@ fun ExplorationMenu(modifier: Modifier = Modifier)
 	}
 	// Get the list of nearby creatures
 	// todo temp
+	var nearbyCreatures = (1..22).map {
 		Pair( first = Dex.species.values.random().spawnNewCreature(),
 		second = distance())
+	}.toMutableList()
 	print(nearbyCreatures)
 
 	val legendary = Pair(
