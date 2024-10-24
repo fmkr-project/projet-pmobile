@@ -77,10 +77,37 @@ fun CreatureItem(
 @Composable
 fun ExplorationMenu(modifier: Modifier = Modifier)
 {
+	var prevFab = 1
+
+	var fab = 1
+
+	fun distance(): Int {
+		val f3 = prevFab + fab
+		prevFab = fab
+		fab = f3
+		val f4 = f3*(100 - Random.nextInt(-5,5))
+		return f4
+	}
 	// Get the list of nearby creatures
 	// todo temp
-	var nearbyCreatures = (1..22).map { Dex.species.values.random().spawnNewCreature() }
+		Pair( first = Dex.species.values.random().spawnNewCreature(),
+		second = distance())
 	print(nearbyCreatures)
+
+	val legendary = Pair(
+		first = Creature(
+			Dex.species[666] ?: CreatureSpecies("Raté",
+				R.drawable.ic_launcher_background
+			), // todo choose random unknown legendary creature
+			50,
+			Stats(100, 100, 100, 100)
+		),
+		second = 10000)
+	val indexLegend = nearbyCreatures.indexOfFirst { it.second > legendary.second }
+
+	nearbyCreatures.add(indexLegend, legendary)
+	prevFab = 1
+	fab = 1
 
 	// Compose
 	Column(modifier = modifier)
@@ -94,8 +121,8 @@ fun ExplorationMenu(modifier: Modifier = Modifier)
 			items(nearbyCreatures) {
 				if (it != null) {
 					CreatureItem(
-						creature = it,
-						distance = 500, // TODO geolocate
+						creature = it.first,
+						distance = it.second, // TODO geolocate
 						modifier = Modifier.padding(10.dp))
 				}
 			}
