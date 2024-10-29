@@ -8,6 +8,8 @@ object Dex
 	var species: Map<Int, CreatureSpecies> = mapOf(
 		1 to CreatureSpecies("Bleutruk", R.drawable.bleutruk_icon),
 		2 to CreatureSpecies("Cylindre", R.drawable.cylindre_icon),
+		5 to CreatureSpecies("Tronbon", R.drawable.tronbon_icon),
+		6 to CreatureSpecies("Feunaitr", R.drawable.feunaitr_icon),
 		666 to CreatureSpecies("Teoridukomplo", R.drawable.teoridukomplo_icon)
 	)
 
@@ -15,6 +17,8 @@ object Dex
 	var descriptions: Map<Int, String> = mapOf(
 		1 to "Lorem ipsum dolor sit amet",
 		2 to "ayo",
+		5 to "TODO",
+		6 to "d,eiofrjiojerioerjogir",
 		666 to "hej!"
 	)
 
