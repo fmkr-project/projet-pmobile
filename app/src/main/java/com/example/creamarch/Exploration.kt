@@ -1,6 +1,8 @@
 package com.example.creamarch
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -13,33 +15,38 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.creamarch.ui.theme.CreamarchTheme
+import com.example.creamarch.ui.theme.Pink80
 import kotlin.random.Random
-
 
 @Composable
 fun CreatureItem(
 	creature: Creature,
 	distance: Int,
+	capture: Boolean,
+	onCapture: () -> Unit,
 	modifier: Modifier = Modifier
 )
 {
+	var bacMod = Modifier
+		.fillMaxWidth()
+		.padding(10.dp)
+	if (capture) bacMod = bacMod.background(color = Pink80)
 	Card(
-		modifier = modifier,
-		onClick = {}
+		modifier = modifier.clickable(enabled = capture, onClick = onCapture),
 	)
 	{
-		Row(modifier = Modifier
-			.fillMaxWidth()
-			.padding(10.dp))
+		Row(modifier = bacMod)
 		{
 			Image(
 				painter = painterResource(creature.baseData.menuSprite),
@@ -77,24 +84,31 @@ fun CreatureItem(
 @Composable
 fun ExplorationMenu(modifier: Modifier = Modifier)
 {
-	var prevFab = 1
+	var walkedDistance = 2000
 
+	// Get the list of nearby creatures
+	// todo temp
+	var prevFab = 1
 	var fab = 1
 
 	fun distance(): Int {
 		val f3 = prevFab + fab
 		prevFab = fab
 		fab = f3
-		val f4 = f3*(100 - Random.nextInt(-5,5))
+		val f4 = f3 * (100 - Random.nextInt(-5, 5))
 		return f4
 	}
-	// Get the list of nearby creatures
-	// todo temp
-	var nearbyCreatures = (1..22).map {
-		Pair( first = Dex.species.values.random().spawnNewCreature(),
-		second = distance())
-	}.toMutableList()
-	print(nearbyCreatures)
+
+	val nearbyCreatures = remember {
+		mutableStateListOf<Pair<Creature, Int>>().apply {
+			addAll((1..22).map {
+				Pair(
+					first = Dex.species.values.random().spawnNewCreature(),
+					second = distance()
+				)
+			})
+		}
+	}
 
 	val legendary = Pair(
 		first = Creature(
@@ -107,10 +121,15 @@ fun ExplorationMenu(modifier: Modifier = Modifier)
 		second = 10000)
 	val indexLegend = nearbyCreatures.indexOfFirst { it.second > legendary.second }
 
-	nearbyCreatures.add(indexLegend, legendary)
-	prevFab = 1
-	fab = 1
+	if (indexLegend != -1) {
+		nearbyCreatures.add(indexLegend, legendary)
+	}
 
+	val nCreatures = nearbyCreatures.subList(0, indexLegend+1)
+
+	fun captureCreature(creature: Pair<Creature, Int>) {
+		nearbyCreatures.remove(creature)
+	}
 	// Compose
 	Column(modifier = modifier)
 	{
@@ -120,12 +139,17 @@ fun ExplorationMenu(modifier: Modifier = Modifier)
 		)
 		// Scrolling list of nearby creatures
 		LazyColumn {
-			items(nearbyCreatures) {
+			items(nCreatures) {
 				if (it != null) {
+					var isCapturable = false
+					if (it.second < walkedDistance)  isCapturable = true
 					CreatureItem(
 						creature = it.first,
 						distance = it.second, // TODO geolocate
-						modifier = Modifier.padding(10.dp))
+						capture = isCapturable,
+						onCapture = { captureCreature(it) },
+						modifier = Modifier.padding(10.dp)
+					)
 				}
 			}
 		}
