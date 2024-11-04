@@ -119,9 +119,9 @@ fun ExplorationMenu(modifier: Modifier = Modifier)
 			Stats(100, 100, 100, 100)
 		),
 		second = 10000)
-	val indexLegend = nearbyCreatures.indexOfFirst { it.second > legendary.second }
+	val indexLegend = nearbyCreatures.indexOfFirst { it.second >= legendary.second }
 
-	if (indexLegend != -1) {
+	if (indexLegend != -1 && nearbyCreatures[indexLegend] != legendary) {
 		nearbyCreatures.add(indexLegend, legendary)
 	}
 
@@ -134,7 +134,8 @@ fun ExplorationMenu(modifier: Modifier = Modifier)
 	Column(modifier = modifier)
 	{
 		Text(
-			text = "Lorem ipsum dolor sit amet",
+			text = "Vous avez parcouru $walkedDistance m!",
+			fontSize = 30.sp,
 			modifier = modifier
 		)
 		// Scrolling list of nearby creatures
