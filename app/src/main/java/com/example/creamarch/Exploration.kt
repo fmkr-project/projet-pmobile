@@ -88,17 +88,12 @@ import kotlin.random.Random
 						.wrapContentHeight()
 				)
 			}
-			
-			Text(
-				text = "$distance m",
-				modifier = modifier
-					.wrapContentHeight()
-			)
 		}
 	}
 
 @Composable
-fun ExplorationMenu(distanceTracker: DistanceTracker, modifier: Modifier = Modifier) {
+fun ExplorationMenu(distanceTracker: DistanceTracker, modifier: Modifier = Modifier)
+{
 	val initialDistance = distanceTracker.loadTotalDistance().toInt()
 	//Log.d("initial distance", initialDistance.toString())
 	val walkedDistance by distanceTracker.distance.collectAsState(initial = initialDistance)
@@ -130,15 +125,13 @@ fun ExplorationMenu(distanceTracker: DistanceTracker, modifier: Modifier = Modif
 
 	val legendary = Pair(
 		first = Creature(
-			Dex.species[666] ?: CreatureSpecies(
-				"Raté",
+			Dex.species[666] ?: CreatureSpecies("Raté",
 				R.drawable.ic_launcher_background
 			), // todo choose random unknown legendary creature
 			50,
 			Stats(100, 100, 100, 100)
 		),
-		second = 10000
-	)
+		second = 10000)
 	val indexLegend = nearbyCreatures.indexOfFirst { it.second >= legendary.second }
 	val legendaryAdded = remember { mutableStateOf(false) }
 	if (indexLegend != -1 && nearbyCreatures[indexLegend] != legendary && !legendaryAdded.value) {
@@ -152,7 +145,6 @@ fun ExplorationMenu(distanceTracker: DistanceTracker, modifier: Modifier = Modif
 		nearbyCreatures.remove(creature)
 		nCreatures = nearbyCreatures.take(initialSubListSize).toMutableList()
 	}
-
 	var nextIndex by remember {
 		mutableIntStateOf(0)
 	}
@@ -163,10 +155,8 @@ fun ExplorationMenu(distanceTracker: DistanceTracker, modifier: Modifier = Modif
 	tillNext = nearbyCreatures[nextIndex].second - walkedDistance
 	// Compose
 
-	Column(
-		modifier = modifier,
-		verticalArrangement = Arrangement.spacedBy(0.dp)
-	)
+	Column(modifier = modifier,
+		verticalArrangement = Arrangement.spacedBy(0.dp) )
 	{
 		Text(
 			text = "Vous avez parcouru $walkedDistance m!",
@@ -183,7 +173,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker, modifier: Modifier = Modif
 			items(nCreatures) {
 				if (it != null) {
 					var isCapturable = false
-					if (it.second < walkedDistance) isCapturable = true
+					if (it.second < walkedDistance)  isCapturable = true
 					CreatureItem(
 						creature = it.first,
 						distance = it.second, // TODO geolocate
@@ -194,8 +184,8 @@ fun ExplorationMenu(distanceTracker: DistanceTracker, modifier: Modifier = Modif
 				}
 			}
 		}
+		}
 	}
-}
 
 	/*@Composable
 	@Preview(showBackground = true)
