@@ -1,36 +1,43 @@
 	package com.example.creamarch
 
-	import DistanceTracker
-	import android.util.Log
-	import androidx.compose.foundation.Image
-	import androidx.compose.foundation.background
-	import androidx.compose.foundation.clickable
-	import androidx.compose.foundation.layout.Column
-	import androidx.compose.foundation.layout.Row
-	import androidx.compose.foundation.layout.fillMaxHeight
-	import androidx.compose.foundation.layout.fillMaxWidth
-	import androidx.compose.foundation.layout.padding
-	import androidx.compose.foundation.layout.size
-	import androidx.compose.foundation.layout.wrapContentHeight
-	import androidx.compose.foundation.lazy.LazyColumn
-	import androidx.compose.foundation.lazy.items
-	import androidx.compose.material3.Card
-	import androidx.compose.material3.Text
-	import androidx.compose.runtime.Composable
-	import androidx.compose.runtime.collectAsState
-	import androidx.compose.runtime.getValue
-	import androidx.compose.runtime.mutableStateListOf
-	import androidx.compose.runtime.mutableStateOf
-	import androidx.compose.runtime.remember
-	import androidx.compose.ui.Modifier
-	import androidx.compose.ui.res.painterResource
-	import androidx.compose.ui.text.font.FontWeight
-	import androidx.compose.ui.tooling.preview.Preview
-	import androidx.compose.ui.unit.dp
-	import androidx.compose.ui.unit.sp
-	import com.example.creamarch.ui.theme.CreamarchTheme
-	import com.example.creamarch.ui.theme.Pink80
-	import kotlin.random.Random
+import DistanceTracker
+import android.util.MutableFloat
+import android.util.Log
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Card
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.creamarch.ui.theme.CreamarchTheme
+import com.example.creamarch.ui.theme.Pink80
+import kotlin.math.min
+import kotlin.random.Random
 
 	@Composable
 	fun CreatureItem(
@@ -81,37 +88,105 @@
 						.wrapContentHeight()
 				)
 			}
+			
+			Text(
+				text = "$distance m",
+				modifier = modifier
+					.wrapContentHeight()
+			)
+		}
+	}
+}
+
+@Composable
+fun ExplorationMenu(distanceTracker: DistanceTracker, modifier: Modifier = Modifier)
+{
+	val initialDistance = distanceTracker.loadTotalDistance().toInt()
+	//Log.d("initial distance", initialDistance.toString())
+	val walkedDistance by distanceTracker.distance.collectAsState(initial = initialDistance)
+	//var walkedDistance = 2000
+
+	// Get the list of nearby creatures
+	// todo temp
+	var prevFab = 0
+	var fab = 1
+
+	fun distance(): Int {
+		val f3 = prevFab + fab
+		prevFab = fab
+		fab = f3
+		val f4 = f3 * (100 - Random.nextInt(-5, 5))
+		return f4
+	}
+
+	val nearbyCreatures = remember {
+		mutableStateListOf<Pair<Creature, Int>>().apply {
+			addAll((1..22).map {
+				Pair(
+					first = Dex.species.values.random().spawnNewCreature(),
+					second = distance()
+				)
+			})
 		}
 	}
 
-	@Composable
-	fun ExplorationMenu(distanceTracker: DistanceTracker, modifier: Modifier =Modifier)
+	val legendary = Pair(
+		first = Creature(
+			Dex.species[666] ?: CreatureSpecies("Raté",
+				R.drawable.ic_launcher_background
+			), // todo choose random unknown legendary creature
+			50,
+			Stats(100, 100, 100, 100)
+		),
+		second = 10000)
+	val indexLegend = nearbyCreatures.indexOfFirst { it.second >= legendary.second }
+	val legendaryAdded = remember { mutableStateOf(false) }
+	if (indexLegend != -1 && nearbyCreatures[indexLegend] != legendary && !legendaryAdded.value) {
+		nearbyCreatures.add(indexLegend, legendary)
+		legendaryAdded.value = true
+	}
+
+	val initialSubListSize = if (indexLegend != -1) indexLegend + 1 else nearbyCreatures.size
+	var nCreatures by remember { mutableStateOf(nearbyCreatures.take(initialSubListSize)) }
+	fun captureCreature(creature: Pair<Creature, Int>) {
+		nearbyCreatures.remove(creature)
+		nCreatures = nearbyCreatures.take(initialSubListSize).toMutableList()
+	}
+	var nextIndex by remember {
+		mutableIntStateOf(0)
+	}
+	var tillNext by remember {
+		mutableFloatStateOf(nCreatures[nextIndex].second - walkedDistance)
+	}
+	nextIndex = nearbyCreatures.indexOfFirst { it.second > walkedDistance }
+	tillNext = nearbyCreatures[nextIndex].second - walkedDistance
+	// Compose
+
+	Column(modifier = modifier,
+		verticalArrangement = Arrangement.spacedBy(0.dp) )
 	{
-		val initialDistance = distanceTracker.loadTotalDistance().toInt()
-		//Log.d("initial distance", initialDistance.toString())
-		val walkedDistance by distanceTracker.distance.collectAsState(initial = initialDistance)
-
-		//var walkedDistance = 2000
-
-		// Get the list of nearby creatures
-		// todo temp
-		var prevFab = 1
-		var fab = 1
-
-		fun distance(): Int {
-			val f3 = prevFab + fab
-			prevFab = fab
-			fab = f3
-			val f4 = f3 * (100 - Random.nextInt(-5, 5))
-			return f4
-		}
-
-		val nearbyCreatures = remember {
-			mutableStateListOf<Pair<Creature, Int>>().apply {
-				addAll((1..22).map {
-					Pair(
-						first = Dex.species.values.random().spawnNewCreature(),
-						second = distance()
+		Text(
+			text = "Vous avez parcouru $walkedDistance m!",
+			fontSize = 30.sp,
+			modifier = modifier
+		)
+		Text(
+			text = "Créature suivante dans $tillNext m!",
+			fontSize = 30.sp,
+			modifier = Modifier.padding(bottom = 5.dp)
+		)
+		// Scrolling list of nearby creatures
+		LazyColumn {
+			items(nCreatures) {
+				if (it != null) {
+					var isCapturable = false
+					if (it.second < walkedDistance)  isCapturable = true
+					CreatureItem(
+						creature = it.first,
+						distance = it.second, // TODO geolocate
+						capture = isCapturable,
+						onCapture = { captureCreature(it) },
+						modifier = Modifier.padding(10.dp)
 					)
 				})
 			}
