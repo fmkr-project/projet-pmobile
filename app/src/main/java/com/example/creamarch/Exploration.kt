@@ -1,5 +1,6 @@
 package com.example.creamarch
 
+import DistanceTracker
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -82,9 +84,10 @@ fun CreatureItem(
 }
 
 @Composable
-fun ExplorationMenu(modifier: Modifier = Modifier)
+fun ExplorationMenu(distanceTracker: DistanceTracker, modifier: Modifier =Modifier)
 {
-	var walkedDistance = 2000
+	val walkedDistance by distanceTracker.distance.collectAsState(initial = 0f)
+	//var walkedDistance = 2000
 
 	// Get the list of nearby creatures
 	// todo temp
@@ -157,11 +160,12 @@ fun ExplorationMenu(modifier: Modifier = Modifier)
 	}
 }
 
-@Composable
+/*@Composable
 @Preview(showBackground = true)
 fun ExplorationPreview()
 {
+	val fakeDistanceTracker = FakeDistanceTracker()
 	CreamarchTheme {
-		ExplorationMenu()
+		ExplorationMenu(distanceTracker = )
 	}
-}
+}*/

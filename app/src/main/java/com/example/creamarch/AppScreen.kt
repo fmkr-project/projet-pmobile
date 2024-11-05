@@ -1,5 +1,6 @@
 package com.example.creamarch
 
+import DistanceTracker
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -13,7 +14,8 @@ import androidx.navigation.compose.rememberNavController
 
 @Composable
 fun AppScreen(
-	navController: NavHostController = rememberNavController()
+	navController: NavHostController = rememberNavController(),
+	distanceTracker : DistanceTracker
 )
 {
 	Scaffold(
@@ -34,7 +36,8 @@ fun AppScreen(
 		{
 			composable(BottomItem.Team.route) { TeamMenu(modifier = Modifier.padding(innerPadding)) }
 			composable(BottomItem.Collection.route) { CollectionMenu(modifier = Modifier.padding(innerPadding)) }
-			composable(BottomItem.Exploration.route) { ExplorationMenu(modifier = Modifier.padding(innerPadding)) }
+			composable(BottomItem.Exploration.route) { ExplorationMenu(modifier = Modifier.padding(innerPadding), distanceTracker= distanceTracker) }
 		}
 	}
 }
+
