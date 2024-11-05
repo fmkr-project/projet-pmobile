@@ -15,7 +15,8 @@ import androidx.navigation.compose.rememberNavController
 @Composable
 fun AppScreen(
 	navController: NavHostController = rememberNavController(),
-	distanceTracker : DistanceTracker
+	distanceTracker : DistanceTracker,
+	menuStatus: MenuStatus
 )
 {
 	Scaffold(
@@ -34,9 +35,27 @@ fun AppScreen(
 			startDestination = BottomItem.Exploration.route
 		)
 		{
-			composable(BottomItem.Team.route) { TeamMenu(modifier = Modifier.padding(innerPadding)) }
-			composable(BottomItem.Collection.route) { CollectionMenu(modifier = Modifier.padding(innerPadding)) }
-			composable(BottomItem.Exploration.route) { ExplorationMenu(modifier = Modifier.padding(innerPadding), distanceTracker= distanceTracker) }
+			composable(BottomItem.Team.route)
+			{
+				TeamMenu(
+					modifier = Modifier.padding(innerPadding)
+				)
+			}
+
+			composable(BottomItem.Collection.route)
+			{
+				CollectionMenu(
+					modifier = Modifier.padding(innerPadding),
+					menuStatus = menuStatus
+				)
+			}
+			composable(BottomItem.Exploration.route)
+			{
+				ExplorationMenu(
+					modifier = Modifier.padding(innerPadding),
+					distanceTracker = distanceTracker
+				)
+			}
 		}
 	}
 }

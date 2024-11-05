@@ -25,6 +25,7 @@ import android.Manifest
 
 class MainActivity : ComponentActivity() {
 	private lateinit var distanceTracker: DistanceTracker
+	private var menuStatus: MenuStatus = MenuStatus()
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -45,7 +46,10 @@ class MainActivity : ComponentActivity() {
 
 		setContent {
 			CreamarchTheme {
-				AppScreen(distanceTracker = distanceTracker)
+				AppScreen(
+					distanceTracker = distanceTracker,
+					menuStatus = menuStatus
+				)
 			}
 		}
 	}

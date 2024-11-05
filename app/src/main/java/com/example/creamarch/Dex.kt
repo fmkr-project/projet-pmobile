@@ -1,5 +1,7 @@
 package com.example.creamarch
 
+import android.util.Log
+
 // Class that stores every species' information and
 // whether the player has caught at least one creature of the species.
 object Dex
@@ -25,4 +27,24 @@ object Dex
 	// Check if all maps have the same size, i.e. the information
 	// about all the species is valid.
 	// todo
+
+	fun getSpeciesByName(speciesName: String): CreatureSpecies
+	{
+		for (pair in species)
+		{
+			if (pair.value.name === speciesName) return pair.value
+		}
+		Log.e("ono", "ono")
+		throw IllegalArgumentException("Species name unknown!")
+	}
+
+	fun getSpeciesId(species: CreatureSpecies): Int
+	{
+		for (pair in this.species)
+		{
+			if (pair.value == species) return pair.key
+		}
+		Log.e("ono", "ono")
+		throw IllegalArgumentException("This species does not exist in the dex!")
+	}
 }
