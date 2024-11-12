@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.creamarch.ui.theme.CreamarchTheme
 
+var playerTeam = (1..6).map { Dex.species.values.random().spawnNewCreature() }
 
 @Composable
 fun TeamMember(
@@ -78,7 +79,6 @@ fun TeamMenu(modifier: Modifier = Modifier)
 	// Get the player's team.
 	// TODO temp
 	// TODO ensure there are no more than 6 creatures in the team
-	var playerTeam = (1..6).map { Dex.species.values.random().spawnNewCreature() }
 
 
 	LazyColumn (modifier = modifier) {
