@@ -11,7 +11,7 @@ import androidx.core.app.ActivityCompat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class DistanceTracker(public val context: Context) {
+class DistanceTracker(private val context: Context) {
     private var locationManager: LocationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     private var lastLocation: Location? = null
 
@@ -19,21 +19,14 @@ class DistanceTracker(public val context: Context) {
     val distance: StateFlow<Int> = _distance
     private var totalDistance = _distance.value.toFloat()
 
-    private val locationListener = object : LocationListener {
-        override fun onLocationChanged(location: Location) {
-            lastLocation?.let { lastLoc ->
-                val distancecalc = lastLoc.distanceTo(location)
-
-                totalDistance += distancecalc
-                _distance.value = Math.round(totalDistance)
-                saveTotalDistance(totalDistance)
-            }
-            lastLocation = location
+    fun updateDistance(location: Location) {
+        lastLocation?.let { lastLoc ->
+            val distancecalc = lastLoc.distanceTo(location)
+            totalDistance += distancecalc
+            _distance.value = Math.round(totalDistance)
+            saveTotalDistance(totalDistance)
         }
-
-        override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
-        override fun onProviderEnabled(provider: String) {}
-        override fun onProviderDisabled(provider: String) {}
+        lastLocation = location
     }
 
     fun startTracking() {
@@ -49,10 +42,19 @@ class DistanceTracker(public val context: Context) {
                 1f,
                 locationListener
             )
-        } else {
-
         }
     }
+
+    private val locationListener = object : LocationListener {
+        override fun onLocationChanged(location: Location) {
+            updateDistance(location)
+        }
+
+        override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
+        override fun onProviderEnabled(provider: String) {}
+        override fun onProviderDisabled(provider: String) {}
+    }
+
     private fun saveTotalDistance(distance: Float) {
         val sharedPreferences: SharedPreferences = context.getSharedPreferences("distance_prefs", Context.MODE_PRIVATE)
         with(sharedPreferences.edit()) {
@@ -61,7 +63,7 @@ class DistanceTracker(public val context: Context) {
         }
     }
 
-    public fun loadTotalDistance(): Float {
+    fun loadTotalDistance(): Float {
         val sharedPreferences: SharedPreferences = context.getSharedPreferences("distance_prefs", Context.MODE_PRIVATE)
         return sharedPreferences.getFloat("total_distance", 0f)
     }
