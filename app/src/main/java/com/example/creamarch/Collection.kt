@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,6 +31,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -114,27 +118,46 @@ fun CollectionMenu(
 				)
 				{
 					Column(
-						modifier = modifier
-							.fillMaxSize(),
+						modifier = Modifier
+							.fillMaxSize()
+							.padding(20.dp),
 						horizontalAlignment = Alignment.CenterHorizontally,
-						verticalArrangement = Arrangement.Bottom
+						verticalArrangement = Arrangement.Center
 					)
 					{
 						Image(
 							painter = painterResource(menuStatus.collectionPopupSpecies.menuSprite),
 							contentDescription = null,
-							modifier = modifier
-								.size(69.dp)
+							modifier = Modifier
+								.size(80.dp)
+						)
+						Spacer(
+							modifier = Modifier
+								.size(20.dp)
 						)
 						Text(
-							text = "felkfejlkfeljkfejlkefkjl",//Dex.descriptions[Dex.getSpeciesId(menuStatus.collectionPopupSpecies)]!!,
+							text = menuStatus.collectionPopupSpecies.name.toUpperCase(Locale.current),
 							fontWeight = FontWeight.Bold,
-							fontSize = 12.sp,
-							modifier = modifier
+							fontSize = 24.sp
+						)
+						Spacer(
+							modifier = Modifier
+								.size(32.dp)
+						)
+						Text(
+							text = Dex.descriptions[Dex.getSpeciesId(menuStatus.collectionPopupSpecies)]!!,
+							fontSize = 18.sp,
+							textAlign = TextAlign.Center
+						)
+						Spacer(
+							modifier = Modifier
+								.size(8.dp)
+								.weight(1f)
 						)
 						OutlinedIconButton(
 							onClick = { isCardOpen = false },
-							modifier = modifier
+							modifier = Modifier
+								.size(52.dp)
 						)
 						{
 							Icon(Icons.Default.Close, contentDescription = null)
