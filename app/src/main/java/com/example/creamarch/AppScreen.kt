@@ -46,7 +46,8 @@ fun AppScreen(
 			{
 				CollectionMenu(
 					modifier = Modifier.padding(innerPadding),
-					menuStatus = menuStatus
+					menuStatus = menuStatus,
+					playerDex = PlayerDex
 				)
 			}
 			composable(BottomItem.Exploration.route)

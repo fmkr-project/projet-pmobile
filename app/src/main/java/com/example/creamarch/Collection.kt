@@ -83,7 +83,8 @@ fun CollectionItem(
 @Composable
 fun CollectionMenu(
 	modifier: Modifier = Modifier,
-	menuStatus: MenuStatus
+	menuStatus: MenuStatus,
+	playerDex: PlayerDex
 )
 {
 	var isCardOpen: Boolean by remember { mutableStateOf(menuStatus.collectionPopupIsOpen) }
@@ -102,7 +103,7 @@ fun CollectionMenu(
 					CollectionItem(
 						id = item.key,
 						species = item.value,
-						isCaught = Random.nextBoolean(),
+						isCaught = PlayerDex.isSeen(item.key),
 						onClick = { isCardOpen = true },
 						menuStatus = menuStatus
 					)
@@ -145,7 +146,9 @@ fun CollectionMenu(
 								.size(32.dp)
 						)
 						Text(
-							text = Dex.descriptions[Dex.getSpeciesId(menuStatus.collectionPopupSpecies)]!!,
+							text = if (PlayerDex.isCaught(Dex.getSpeciesId(menuStatus.collectionPopupSpecies)))
+								Dex.descriptions[Dex.getSpeciesId(menuStatus.collectionPopupSpecies)]!!
+							else "??? ? ???? ? ????? ????????? ?? ??????",
 							fontSize = 18.sp,
 							textAlign = TextAlign.Center
 						)
@@ -173,5 +176,8 @@ fun CollectionMenu(
 @Composable
 fun CollectionPreview()
 {
-	CollectionMenu(menuStatus = MenuStatus(collectionPopupIsOpen = true))
+	CollectionMenu(
+		menuStatus = MenuStatus(collectionPopupIsOpen = true),
+		playerDex = PlayerDex
+	)
 }

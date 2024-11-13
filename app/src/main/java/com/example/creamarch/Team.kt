@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.creamarch.ui.theme.CreamarchTheme
 
-var playerTeam = (1..6).map { Dex.species.values.random().spawnNewCreature() }
+var playerTeam = (1..6).map { Dex.species.values.random().spawnNewCreature(10) }
 
 @Composable
 fun TeamMember(

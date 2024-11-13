@@ -5,10 +5,14 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
-data class Stats(
+data class TeamStats(
     val maxHp: Int,
-    val attack: Int,
-    val defense: Int
+    val attack: Int
 ) {
     var currentHp by mutableIntStateOf(maxHp)  // Assigner la valeur sans initialiser dans la propriété elle-même
 }
+
+data class BaseStats(
+    val maxHp: Int,
+    val attack: Int
+)

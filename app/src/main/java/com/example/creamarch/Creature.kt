@@ -5,7 +5,7 @@ package com.example.creamarch
 class Creature(
 	val baseData: CreatureSpecies,
 	val level: Int,
-	val stats: Stats
+	val stats: TeamStats
 )
 {
 	// TODO Generate stats depending on level.

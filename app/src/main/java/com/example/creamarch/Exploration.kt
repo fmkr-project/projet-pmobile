@@ -1,6 +1,7 @@
 	package com.example.creamarch
 
 import DistanceTracker
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -141,20 +142,19 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 		mutableStateListOf<Pair<Creature, Int>>().apply {
 			addAll((1..22).map {
 				Pair(
-					first = Dex.species.values.random().spawnNewCreature(),
+					first = Dex.species.values.random().spawnNewCreature(10), // TODO random levels
 					second = distance()
 				)
 			})
 		}
 	}
 
+	val tempTeoridukomplo = Dex.species[666]!! // TODO remove this
 	val legendary = Pair(
 		first = Creature(
-			Dex.species[666] ?: CreatureSpecies("Raté",
-				R.drawable.ic_launcher_background
-			), // todo choose random unknown legendary creature
+			tempTeoridukomplo, // todo choose random unknown legendary creature
 			50,
-			Stats(100, 100, 100)
+			tempTeoridukomplo.generateStats() // TODO use spawnNewCreature()
 		),
 		second = 10000)
 	val indexLegend = nearbyCreatures.indexOfFirst { it.second >= legendary.second }
@@ -188,6 +188,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 
 	if (showDialog && capturedCreature != null) {
 		LaunchedEffect(Unit) {
+			PlayerDex.markAsSeen(Dex.getSpeciesId(capturedCreature!!.first.baseData))
 			var indexCreature = 0
 			while (showDialog && indexCreature < playerTeam.size) {
 				if (playerTeam[indexCreature].stats.currentHp > 0){
@@ -214,6 +215,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 							.clickable {
 								capturedCreature!!.first.stats.currentHp -= 10
 								if (capturedCreature!!.first.stats.currentHp <= 0) {
+									PlayerDex.markAsCaught(Dex.getSpeciesId(capturedCreature!!.first.baseData))
 									showDialog = false
 									nearbyCreatures.remove(capturedCreature!!)
 									nCreatures = nearbyCreatures
