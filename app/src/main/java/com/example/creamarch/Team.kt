@@ -4,9 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -29,6 +27,7 @@ var playerTeam = (1..6).map { Dex.species.values.random().spawnNewCreature() }
 fun TeamMember(
 	creature: Creature,
 	pv: Int,
+	maxPV: Int,
 	modifier: Modifier
 )
 {
@@ -65,7 +64,7 @@ fun TeamMember(
 				)
 			}
 			Text(
-				text = "$pv / $pv",
+				text = "$pv / $maxPV",
 				modifier = modifier
 					.wrapContentHeight()
 			)
@@ -85,7 +84,8 @@ fun TeamMenu(modifier: Modifier = Modifier)
 		items(playerTeam) {
 			TeamMember(
 				creature = it,
-				pv = 100,
+				pv = it.stats.currentHp,
+				maxPV = it.stats.maxHp,
 				modifier = Modifier.padding(10.dp))
 		}
 	}

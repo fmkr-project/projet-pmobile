@@ -1,8 +1,5 @@
 package com.example.creamarch
 
-import android.graphics.drawable.Drawable
-import androidx.compose.ui.res.painterResource
-
 // Class to store base creature data.
 data class CreatureSpecies(
 	val name: String,
@@ -16,6 +13,6 @@ data class CreatureSpecies(
 		return Creature(
 			this,
 			10,
-			Stats(100, 100, 100, 100))
+			Stats(100, 100, 100))
 	}
 }

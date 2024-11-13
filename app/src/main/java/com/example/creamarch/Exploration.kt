@@ -5,15 +5,21 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -29,9 +35,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.creamarch.ui.theme.Pink80
@@ -90,6 +96,24 @@ import kotlin.random.Random
 		}
 	}
 
+	@Composable
+	fun HealthBar(currentHealth: Int, maxHealth: Int, modifier: Modifier = Modifier) {
+		val healthPercentage = (currentHealth / maxHealth.toFloat()).coerceIn(0f, 1f)
+		Box(
+			modifier = modifier
+				.fillMaxWidth()
+				.height(10.dp)
+				.background(Color.Gray) // Couleur de fond de la barre de vie
+		) {
+			Box(
+				modifier = Modifier
+					.fillMaxHeight()
+					.fillMaxWidth(healthPercentage) // Largeur en fonction de la santé
+					.background(Color.Green) // Couleur de la barre de vie
+			)
+		}
+	}
+
 @Composable
 fun ExplorationMenu(distanceTracker: DistanceTracker,
 					modifier: Modifier = Modifier,
@@ -130,7 +154,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 				R.drawable.ic_launcher_background
 			), // todo choose random unknown legendary creature
 			50,
-			Stats(100, 100, 100, 100)
+			Stats(100, 100, 100)
 		),
 		second = 10000)
 	val indexLegend = nearbyCreatures.indexOfFirst { it.second >= legendary.second }
@@ -145,10 +169,12 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 
 	var showDialog by remember { mutableStateOf(false) }
 	var capturedCreature by remember { mutableStateOf<Pair<Creature, Int>?>(null) }
+
 	fun captureCreature(creature: Pair<Creature, Int>) {
 		capturedCreature = creature
 		showDialog = true
 	}
+
 	var isButtonEnabled by remember { mutableStateOf(true) }
 	var disableButtonTemporarily by remember { mutableStateOf(false) }
 
@@ -161,45 +187,71 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 	}
 
 	if (showDialog && capturedCreature != null) {
+		LaunchedEffect(Unit) {
+			var indexCreature = 0
+			while (showDialog && indexCreature < playerTeam.size) {
+				if (playerTeam[indexCreature].stats.currentHp > 0){
+					delay(100L)
+					playerTeam[indexCreature].stats.currentHp -= 1
+				} else {
+					indexCreature ++
+					if (indexCreature >= playerTeam.size)
+						showDialog = false // Fermer le dialogue si la vie est épuisée
+				}
+			}
+		}
 		AlertDialog(
 			onDismissRequest = {  },
 			title = { Text("Combat") },
 			text = {
-				Image(
-					painter = painterResource(id = capturedCreature!!.first.baseData.menuSprite),
-					contentDescription = "Créature à battre",
-					modifier = Modifier
-						.fillMaxWidth()
-						.fillMaxHeight(0.75f)
-						.clickable {
-							capturedCreature!!.first.stats.currentHp -= 10
-							if (capturedCreature!!.first.stats.currentHp <= 0) {
-								showDialog = false
-								nearbyCreatures.remove(capturedCreature!!)
-								nCreatures = nearbyCreatures
-									.take(initialSubListSize)
-									.toMutableList()
+				Column {
+					Image(
+						painter = painterResource(id = capturedCreature!!.first.baseData.menuSprite),
+						contentDescription = "Créature à battre",
+						modifier = Modifier
+							.fillMaxWidth()
+							.aspectRatio(1.5f)
+							.clickable {
+								capturedCreature!!.first.stats.currentHp -= 10
+								if (capturedCreature!!.first.stats.currentHp <= 0) {
+									showDialog = false
+									nearbyCreatures.remove(capturedCreature!!)
+									nCreatures = nearbyCreatures
+										.take(initialSubListSize)
+										.toMutableList()
+								}
 							}
-						}
-				)
-				LazyRow(
-					modifier = Modifier
-						.padding(10.dp)
-						.fillMaxWidth()
-						.size(36.dp))
-				{
-					items(playerTeam) {
-						if (it != null){
-							Column {
-								Image(painter = painterResource(id = it.baseData.menuSprite),
-									contentDescription = "My creatures",
-									modifier = Modifier.fillMaxWidth().size(24.dp))
-								Text(text = "${it.stats.currentHp}/${it.stats.maxHp}",
-									fontSize = 10.sp
-								)
+					)
+
+					Spacer(modifier = Modifier.height(16.dp))
+
+					LazyVerticalGrid(
+						columns = GridCells.Fixed(3),
+						modifier = modifier
+							.fillMaxWidth()
+							.weight(1f)
+					)
+					{
+						items(playerTeam) {
+							if (it != null){
+								Column(modifier = Modifier.padding(8.dp)) {
+									Image(painter = painterResource(id = it.baseData.menuSprite),
+										contentDescription = "My creatures",
+										modifier = Modifier
+											.fillMaxWidth()
+											.aspectRatio(1.5f)
+									)
+									HealthBar(
+										currentHealth = it.stats.currentHp,
+										maxHealth = it.stats.maxHp,
+										modifier = Modifier.padding(4.dp)
+									)
+								}
 							}
 						}
 					}
+
+					Spacer(modifier = Modifier.height(16.dp))
 				}
 			},
 			confirmButton = {
@@ -215,7 +267,9 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 					Text("Fuite")
 				}
 			},
-			modifier = Modifier.fillMaxWidth()
+			modifier = Modifier
+				.fillMaxWidth()
+				.fillMaxHeight(0.75f)
 		)
 	}
 
