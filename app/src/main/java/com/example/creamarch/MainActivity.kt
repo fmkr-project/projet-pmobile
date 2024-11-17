@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -27,6 +28,25 @@ class MainActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			if (ActivityCompat.checkSelfPermission(
+					this,
+					Manifest.permission.ACTIVITY_RECOGNITION
+				) != PackageManager.PERMISSION_GRANTED
+			) {
+				requestActivityRecognitionPermission()
+			} else {
+				startStepCounterService()
+			}
+		} else {
+			startStepCounterService()
+		}
+
+		setContent {
+			CreamarchTheme {
+				ExplorationMenu(distanceTracker = distanceTracker)
+			}
+		}
 		// Initialisez DistanceTracker
 		distanceTracker = DistanceTracker(this)
 
@@ -59,6 +79,23 @@ class MainActivity : ComponentActivity() {
 			}
 		}
 	}
+
+	private fun requestActivityRecognitionPermission() {
+		registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+			if (isGranted) {
+				startStepCounterService()
+			} else {
+				showPermissionDeniedDialog("Permission pour reconnaître les activités refusée.")
+			}
+		}.launch(Manifest.permission.ACTIVITY_RECOGNITION)
+	}
+
+	private fun startStepCounterService() {
+		Log.d("MainActivity", "Démarrage du service StepCounterService")
+		val intent = Intent(this, StepCounterService::class.java)
+		startService(intent)
+	}
+
 
 	// Demande de la permission ACCESS_FINE_LOCATION
 	private fun requestFineLocationPermission() {
@@ -95,7 +132,8 @@ class MainActivity : ComponentActivity() {
 
 	override fun onDestroy() {
 		super.onDestroy()
-		distanceTracker.stopTracking()
+		val intent = Intent(this, StepCounterService::class.java)
+		stopService(intent)
 	}
 
 	private fun showPermissionDeniedDialog(message: String) {

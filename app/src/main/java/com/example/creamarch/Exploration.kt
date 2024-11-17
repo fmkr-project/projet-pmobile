@@ -121,8 +121,10 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 )
 {
 	val initialDistance = distanceTracker.loadTotalDistance().toInt()
+	val dist by StepCounterService.distanceWalked.collectAsState(initial = 0.0)
+	val walkedDistance = dist.toInt();
 	//Log.d("initial distance", initialDistance.toString())
-	val walkedDistance by distanceTracker.distance.collectAsState(initial = initialDistance)
+	//val walkedDistance by distanceTracker.distance.collectAsState(initial = initialDistance)
 	//var walkedDistance = 2000
 
 	// Get the list of nearby creatures
