@@ -20,8 +20,33 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.creamarch.ui.theme.CreamarchTheme
+import kotlin.math.roundToInt
 
-var playerTeam = (1..6).map { Dex.species.values.random().spawnNewCreature(10) }
+var playerTeam = (1..6).map { Dex.species.values.random().spawnNewCreature(10) }.toMutableList()
+
+fun deadTeam(): Boolean{
+	val i = playerTeam.fold(true)
+	{ acc, creature -> acc && (creature.stats.currentHp <= 0) }
+	return i
+}
+
+fun clickPower(): Int{
+	val attack = playerTeam.fold(0) { acc, creature ->
+		if (creature.stats.currentHp > 0) creature.stats.attack + acc
+		else acc
+	}
+	return (attack/ playerTeam.size.toFloat()).roundToInt()
+}
+
+fun addCreatureToTeam(creature: Creature) {
+	// Si la taille de playerTeam est 6, on supprime la dernière créature
+	if (playerTeam.size >= 6) {
+		playerTeam.removeAt(5)  // Retire le dernier élément (indice 5)
+	}
+	creature.stats.currentHp = 1
+	// Ajoute la créature en première position
+	playerTeam.add(0, creature)  // Insère la créature à l'index 0 (en début de liste)
+}
 
 @Composable
 fun TeamMember(
