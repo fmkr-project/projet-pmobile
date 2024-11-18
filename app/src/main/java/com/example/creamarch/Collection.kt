@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,17 +45,19 @@ import kotlin.random.Random
 fun CollectionItem(
 	id: Int,
 	species: CreatureSpecies,
-	isCaught: Boolean,
 	menuStatus: MenuStatus,
 	onClick: () -> Unit,
 	modifier: Modifier = Modifier
 )
 {
-	val painter: Painter = if (isCaught) painterResource(species.menuSprite)
+	val isSeen = PlayerDex.isSeen(id)
+	val isCaught = PlayerDex.isCaught(id)
+
+	val painter: Painter = if (isSeen) painterResource(species.menuSprite)
 	else painterResource(R.drawable.what)
 
 	Card(
-		onClick = { if (isCaught)
+		onClick = { if (isSeen)
 		{
 			onClick()
 			menuStatus.openCollectionPopup()
@@ -75,7 +78,22 @@ fun CollectionItem(
 				modifier = modifier
 					.size(60.dp)
 			)
-			Text(text = "#" + id.toString().padStart(3, '0'))
+			Row(
+				modifier = modifier,
+				verticalAlignment = Alignment.CenterVertically
+			)
+			{
+				if (isCaught)
+				{
+					Image(
+						painter = painterResource(R.drawable.mon_caught),
+						contentDescription = null,
+						modifier = modifier
+							.size(16.dp)
+					)
+				}
+				Text(text = "#" + id.toString().padStart(3, '0'))
+			}
 		}
 	}
 }
@@ -103,7 +121,6 @@ fun CollectionMenu(
 					CollectionItem(
 						id = item.key,
 						species = item.value,
-						isCaught = PlayerDex.isSeen(item.key),
 						onClick = { isCardOpen = true },
 						menuStatus = menuStatus
 					)
