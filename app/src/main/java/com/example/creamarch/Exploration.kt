@@ -1,7 +1,6 @@
 	package com.example.creamarch
 
 	import DistanceTracker
-	import android.util.Log
 	import androidx.compose.foundation.Image
 	import androidx.compose.foundation.background
 	import androidx.compose.foundation.clickable
@@ -46,6 +45,34 @@
 	import com.example.creamarch.ui.theme.PurpleGrey80
 	import kotlinx.coroutines.delay
 	import kotlin.random.Random
+
+	var prevFab = 0
+	var fab = 1
+
+	fun distance(): Int {
+		val f3 = prevFab + fab
+		prevFab = fab
+		fab = f3
+		val f4 = f3 * (100 - Random.nextInt(-5, 5))
+		return f4/10
+	}
+
+	val legendary = Pair(
+		first = Dex.species[666]!!.spawnNewCreature(50),
+		second = 100)
+
+	var tempCreature = (1..22).map {
+		Pair(
+			first = Dex.species.values.filter {  it != legendary.first.baseData}.random().spawnNewCreature(10), // TODO random levels
+			second = distance()
+		)
+	}.toMutableList()
+
+	val indexLegend = tempCreature.indexOfFirst { it.second >= legendary.second }
+
+	var initialSubListSize = if (indexLegend != -1) indexLegend + 1 else tempCreature.size
+
+	var legendaryAdded = false
 
 	@Composable
 	fun CreatureItem(
@@ -130,49 +157,24 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 {
 	val initialDistance = distanceTracker.loadTotalDistance().toInt()
 	val dist by StepCounterService.distanceWalked.collectAsState(initial = 0.0)
-	val walkedDistance = dist.toInt()
+	//val walkedDistance = dist.toInt()
 	//Log.d("initial distance", initialDistance.toString())
-	//val walkedDistance by distanceTracker.distance.collectAsState(initial = initialDistance)
+	val walkedDistance by distanceTracker.distance.collectAsState(initial = initialDistance)
 	//var walkedDistance = 2000
 
 	// Get the list of nearby creatures
 	// todo temp
-	var prevFab = 0
-	var fab = 1
 
-	fun distance(): Int {
-		val f3 = prevFab + fab
-		prevFab = fab
-		fab = f3
-		val f4 = f3 * (100 - Random.nextInt(-5, 5))
-		return f4/10
+	if (indexLegend != -1 && tempCreature[indexLegend] != legendary && !legendaryAdded) {
+		tempCreature.add(indexLegend, legendary)
+		legendaryAdded = true
 	}
 
-	val legendary = Pair(
-		first = Dex.species[666]!!.spawnNewCreature(50),
-		second = 100)
 
 	val nearbyCreatures = remember {
-		mutableStateListOf<Pair<Creature, Int>>().apply {
-			addAll((1..22).map {
-				Pair(
-					first = Dex.species.values.filter {  it != legendary.first.baseData}.random().spawnNewCreature(10), // TODO random levels
-					second = distance()
-				)
-			})
-		}
+		tempCreature
 	}
 
-	val indexLegend = nearbyCreatures.indexOfFirst { it.second >= legendary.second }
-	val legendaryAdded = remember { mutableStateOf(false) }
-	if (indexLegend != -1 && nearbyCreatures[indexLegend] != legendary && !legendaryAdded.value) {
-		nearbyCreatures.add(indexLegend, legendary)
-		legendaryAdded.value = true
-	}
-
-	val initialSubListSize = remember {
-		if (indexLegend != -1) indexLegend + 1 else nearbyCreatures.size
-	}
 	var nCreatures by remember {
 		mutableStateOf(nearbyCreatures.take(initialSubListSize).toList())
 	}
@@ -229,7 +231,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 								if (capturedCreature!!.first.stats.currentHp <= 0) {
 									PlayerDex.markAsCaught(Dex.getSpeciesId(capturedCreature!!.first.baseData))
 									showDialog = false
-									nearbyCreatures.remove(capturedCreature!!)
+									tempCreature.remove(capturedCreature!!)
 									nCreatures = nearbyCreatures.take(initialSubListSize).toList()
 									addCreatureToTeam(capturedCreature!!.first)
 								}

@@ -31,21 +31,21 @@ fun deadTeam(): Boolean{
 }
 
 fun clickPower(): Int{
-	val attack = playerTeam.fold(0) { acc, creature ->
+	return playerTeam.fold(0) { acc, creature ->
 		if (creature.stats.currentHp > 0) creature.stats.attack + acc
 		else acc
 	}
-	return (attack/ playerTeam.size.toFloat()).roundToInt()
 }
 
 fun addCreatureToTeam(creature: Creature) {
-	// Si la taille de playerTeam est 6, on supprime la dernière créature
+	// Si la taille de playerTeam est 6, on supprime la derniere créature
 	if (playerTeam.size >= 6) {
 		playerTeam.removeAt(5)  // Retire le dernier élément (indice 5)
 	}
-	creature.stats.currentHp = 1
+	creature.stats.currentHp = creature.stats.maxHp
+
 	// Ajoute la créature en première position
-	playerTeam.add(0, creature)  // Insère la créature à l'index 0 (en début de liste)
+	playerTeam.add(0, creature)  // Insere la créature à l'index 0 (en debut de liste)
 }
 
 @Composable
@@ -103,7 +103,9 @@ fun TeamMenu(modifier: Modifier = Modifier)
 	// Get the player's team.
 	// TODO temp
 	// TODO ensure there are no more than 6 creatures in the team
-
+	for (creature in playerTeam)
+		if (creature.stats.currentHp < 0)
+			creature.stats.currentHp = 0
 
 	LazyColumn (modifier = modifier) {
 		items(playerTeam) {
