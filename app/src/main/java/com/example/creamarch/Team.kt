@@ -48,6 +48,12 @@ fun addCreatureToTeam(creature: Creature) {
 	playerTeam.add(0, creature)  // Insere la créature à l'index 0 (en debut de liste)
 }
 
+fun addCreatureToTeam(creature: Creature, index: Int){
+	playerTeam.removeAt(index)
+	creature.stats.currentHp = creature.stats.maxHp
+	playerTeam.add(index, creature)
+}
+
 @Composable
 fun TeamMember(
 	creature: Creature,
