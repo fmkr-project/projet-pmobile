@@ -1,6 +1,7 @@
 	package com.example.creamarch
 
 	import DistanceTracker
+	import android.util.Log
 	import androidx.compose.foundation.Image
 	import androidx.compose.foundation.background
 	import androidx.compose.foundation.clickable
@@ -11,6 +12,7 @@
 	import androidx.compose.foundation.layout.Spacer
 	import androidx.compose.foundation.layout.aspectRatio
 	import androidx.compose.foundation.layout.fillMaxHeight
+	import androidx.compose.foundation.layout.fillMaxSize
 	import androidx.compose.foundation.layout.fillMaxWidth
 	import androidx.compose.foundation.layout.height
 	import androidx.compose.foundation.layout.padding
@@ -158,7 +160,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 
 	val initialDistance = distanceTracker.loadTotalDistance().toInt()
 	val dist by StepCounterService.distanceWalked.collectAsState(initial = 0.0)
-	//val walkedDistance by distanceTracker.distance.collectAsState(initial = initialDistance)
+	val walkedDistance by distanceTracker.distance.collectAsState(initial = initialDistance)
 	/*walkedDistance = if (debug)
 	{
 		//val walkedDistance
@@ -169,7 +171,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 		dist.toInt()
 	}*/
 
-	val walkedDistance = dist.toInt()
+	//val walkedDistance = dist.toInt()
 
 	//Log.d("initial distance", initialDistance.toString())
 
@@ -209,8 +211,12 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 		}
 	}
 
+	var changeTeam by remember {
+		mutableStateOf(false)
+	}
+
 	// Code de la pop-up de combat
-	if (showDialog && capturedCreature != null) {
+	if (showDialog && capturedCreature != null && !deadTeam()) {
 
 		if (deadTeam()) showDialog = false
 		else PlayerDex.see(Dex.getSpeciesId(capturedCreature!!.first.baseData))
@@ -231,7 +237,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 							.aspectRatio(1.5f)
 							.clickable {
 								capturedCreature!!.first.stats.currentHp -= clickPower()
-								if (!deadTeam()){
+								if (!deadTeam()) {
 									var randTeam = Random.nextInt(playerTeam.size)
 									while (playerTeam[randTeam].stats.currentHp <= 0)
 										randTeam = Random.nextInt(playerTeam.size)
@@ -241,8 +247,12 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 									PlayerDex.catch(Dex.getSpeciesId(capturedCreature!!.first.baseData))
 									showDialog = false
 									tempCreature.remove(capturedCreature!!)
-									nCreatures = nearbyCreatures.take(initialSubListSize).toList()
+									nCreatures = nearbyCreatures
+										.take(initialSubListSize)
+										.toList()
 									addCreatureToTeam(capturedCreature!!.first)
+
+									//changeTeam = true
 								}
 							}
 					)
@@ -298,7 +308,49 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 				.fillMaxHeight(0.75f)
 		)
 	}
+	//Code du choix de la creature a garder
 
+	if (changeTeam){
+		AlertDialog(
+			modifier = Modifier
+				.fillMaxSize(),
+			onDismissRequest = {  },
+			title = { Text(text = "Quelle créature liberer?")},
+			text = {
+				LazyColumn {
+					items(playerTeam){
+						TeamMember(
+							creature = it,
+							pv = it.stats.currentHp,
+							maxPV = it.stats.maxHp,
+							modifier = Modifier
+								.padding(10.dp)
+								.clickable {
+									addCreatureToTeam(
+										capturedCreature!!.first,
+										playerTeam.indexOf(it)
+									)
+									changeTeam = false
+								}
+						)
+					}
+				}
+			},
+			confirmButton = {
+				Button(onClick = { changeTeam = false}) {
+					TeamMember(
+						creature = capturedCreature!!.first,
+						pv = capturedCreature!!.first.stats.currentHp,
+						maxPV = capturedCreature!!.first.stats.maxHp,
+						modifier = Modifier.fillMaxHeight(0.1f)
+							.background(color = Pink80)
+							.padding(10.dp)) }
+				}
+
+
+		)
+	}
+	// Code de la page de base
 	var nextIndex by remember {
 		mutableIntStateOf(0)
 	}
