@@ -30,7 +30,6 @@
 	import androidx.compose.runtime.collectAsState
 	import androidx.compose.runtime.getValue
 	import androidx.compose.runtime.mutableIntStateOf
-	import androidx.compose.runtime.mutableStateListOf
 	import androidx.compose.runtime.mutableStateOf
 	import androidx.compose.runtime.remember
 	import androidx.compose.runtime.setValue
@@ -155,12 +154,21 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 					modifier: Modifier = Modifier,
 )
 {
+	val debug = true
+
 	val initialDistance = distanceTracker.loadTotalDistance().toInt()
 	val dist by StepCounterService.distanceWalked.collectAsState(initial = 0.0)
-	val walkedDistance = dist.toInt()
+	val walkedDistance by distanceTracker.distance.collectAsState(initial = initialDistance)
+	/*walkedDistance = if (debug)
+	{
+		//val walkedDistance
+		2000
+	}
+	else
+	{
+		dist.toInt()
+	}*/
 	//Log.d("initial distance", initialDistance.toString())
-	//val walkedDistance by distanceTracker.distance.collectAsState(initial = initialDistance)
-	//var walkedDistance = 2000
 
 	// Get the list of nearby creatures
 	// todo temp
@@ -200,17 +208,9 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 
 	// Code de la pop-up de combat
 	if (showDialog && capturedCreature != null) {
-		LaunchedEffect(Unit) {
-			PlayerDex.markAsSeen(Dex.getSpeciesId(capturedCreature!!.first.baseData))
-			while (!deadTeam()) {
-				var randTeam = Random.nextInt(playerTeam.size)
-				while (playerTeam[randTeam].stats.currentHp <= 0)
-					randTeam = Random.nextInt(playerTeam.size)
-				delay(1000L)
-				playerTeam[randTeam].stats.currentHp -= capturedCreature!!.first.stats.attack
-			}
-			showDialog = false // Fermer le dialogue si la vie est épuisée
-		}
+
+		if (deadTeam()) showDialog = false
+		else PlayerDex.see(Dex.getSpeciesId(capturedCreature!!.first.baseData))
 		AlertDialog(
 			onDismissRequest = {  },
 			title = { Text("Combat") },
@@ -228,8 +228,14 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 							.aspectRatio(1.5f)
 							.clickable {
 								capturedCreature!!.first.stats.currentHp -= clickPower()
+								if (!deadTeam()){
+									var randTeam = Random.nextInt(playerTeam.size)
+									while (playerTeam[randTeam].stats.currentHp <= 0)
+										randTeam = Random.nextInt(playerTeam.size)
+									playerTeam[randTeam].stats.currentHp -= capturedCreature!!.first.stats.attack
+								}
 								if (capturedCreature!!.first.stats.currentHp <= 0) {
-									PlayerDex.markAsCaught(Dex.getSpeciesId(capturedCreature!!.first.baseData))
+									PlayerDex.catch(Dex.getSpeciesId(capturedCreature!!.first.baseData))
 									showDialog = false
 									tempCreature.remove(capturedCreature!!)
 									nCreatures = nearbyCreatures.take(initialSubListSize).toList()
@@ -297,7 +303,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 		mutableIntStateOf(nCreatures[nextIndex].second - walkedDistance)
 	}
 	nextIndex = nearbyCreatures.indexOfFirst { it.second > walkedDistance }
-	tillNext = nearbyCreatures[nextIndex].second - walkedDistance
+	tillNext = if (nextIndex != -1) nearbyCreatures[nextIndex].second - walkedDistance else 0
 	// Compose
 
 	Column(modifier = modifier,

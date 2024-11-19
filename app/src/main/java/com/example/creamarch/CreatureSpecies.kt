@@ -1,8 +1,17 @@
 package com.example.creamarch
 
+enum class Rarity
+{
+	Common,
+	Uncommon,
+	Rare,
+	Legendary
+}
+
 // Class to store base creature data.
 data class CreatureSpecies(
 	val name: String,
+	val rarity: Rarity,
 	val menuSprite: Int,
 	val baseStats: BaseStats
 )

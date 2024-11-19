@@ -9,19 +9,19 @@ object Dex
 	// Associate an ID to a species.
 	var species: Map<Int, CreatureSpecies> = mapOf(
 		1 to CreatureSpecies(
-			"Bleutruk", R.drawable.bleutruk_icon, BaseStats(100, 5)
+			"Bleutruk", Rarity.Uncommon, R.drawable.bleutruk_icon, BaseStats(50, 7)
 		),
 		2 to CreatureSpecies(
-			"Cylindre", R.drawable.cylindre_icon, BaseStats(35, 8)
+			"Cylindre", Rarity.Common, R.drawable.cylindre_icon, BaseStats(30, 8)
 		),
 		5 to CreatureSpecies(
-			"Tronbon", R.drawable.tronbon_icon, BaseStats(175, 3)
+			"Tronbon", Rarity.Common, R.drawable.tronbon_icon, BaseStats(60, 3)
 		),
 		6 to CreatureSpecies(
-			"Feunaitr", R.drawable.feunaitr_icon, BaseStats(330, 10)
+			"Feunaitr", Rarity.Uncommon, R.drawable.feunaitr_icon, BaseStats(80, 5)
 		),
 		666 to CreatureSpecies(
-			"Teoridukomplo", R.drawable.teoridukomplo_icon, BaseStats(1000, 50)
+			"Teoridukomplo", Rarity.Legendary, R.drawable.teoridukomplo_icon, BaseStats(1000, 25)
 		)
 	)
 
