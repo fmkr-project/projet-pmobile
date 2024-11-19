@@ -20,6 +20,18 @@ object Dex
 		6 to CreatureSpecies(
 			"Feunaitr", Rarity.Uncommon, R.drawable.feunaitr_icon, BaseStats(80, 5)
 		),
+		7 to CreatureSpecies(
+			"Oématlo", Rarity.Common, R.drawable.oematlo_icon, BaseStats(45, 4)
+		),
+		9 to CreatureSpecies(
+			"Chaiziqea", Rarity.Uncommon, R.drawable.chaiziqea_icon, BaseStats(70, 6)
+		),
+		10 to CreatureSpecies(
+			"Foteuyiqea", Rarity.Rare, R.drawable.foteuyiqea_icon, BaseStats(100, 8)
+		),
+		11 to CreatureSpecies(
+			"Kanapay", Rarity.Epic, R.drawable.kanapay_icon, BaseStats(120, 10)
+		),
 		666 to CreatureSpecies(
 			"Teoridukomplo", Rarity.Legendary, R.drawable.teoridukomplo_icon, BaseStats(1000, 25)
 		)
@@ -31,6 +43,10 @@ object Dex
 		2 to "ayo",
 		5 to "TODO",
 		6 to "d,eiofrjiojerioerjogir",
+		7 to "TODO",
+		9 to "TODO",
+		10 to "TODO",
+		11 to "TODO",
 		666 to "hej!"
 	)
 

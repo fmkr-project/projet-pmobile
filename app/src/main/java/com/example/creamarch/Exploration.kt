@@ -305,7 +305,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 	var tillNext by remember {
 		mutableIntStateOf(nCreatures[nextIndex].second - walkedDistance)
 	}
-	nextIndex = nearbyCreatures.indexOfFirst { it.second > walkedDistance }
+	nextIndex = nearbyCreatures.indexOfFirst { it.second >= walkedDistance }
 	tillNext = if (nextIndex != -1) nearbyCreatures[nextIndex].second - walkedDistance else 0
 	// Compose
 
