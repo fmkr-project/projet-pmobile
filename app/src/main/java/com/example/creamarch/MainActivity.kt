@@ -55,7 +55,7 @@ class MainActivity : ComponentActivity() {
 		distanceTracker = DistanceTracker(this)
 
 		// Vérifiez et demandez les permissions de localisation avant de commencer le suivi
-		if (ActivityCompat.checkSelfPermission(
+		/*if (ActivityCompat.checkSelfPermission(
 				this,
 				Manifest.permission.ACCESS_FINE_LOCATION
 			) == PackageManager.PERMISSION_GRANTED
@@ -72,7 +72,7 @@ class MainActivity : ComponentActivity() {
 			}
 		} else {
 			requestFineLocationPermission()
-		}
+		}*/
 
 		setContent {
 			CreamarchTheme {
