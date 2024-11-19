@@ -1,6 +1,7 @@
 package com.example.creamarch
 
 import DistanceTracker
+import ParametresMenu
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -57,7 +58,23 @@ fun AppScreen(
 					distanceTracker = distanceTracker
 				)
 			}
+			composable(BottomItem.Settings.route) {
+				ParametresMenu(
+					modifier = Modifier.padding(innerPadding),
+					onMusicToggle = { isEnabled ->
+						// Gérer l'état de la musique ici
+						println("Musique activée : $isEnabled")
+						// Vous pouvez ajouter une sauvegarde dans SharedPreferences ou DataStore
+					},
+					onVibrationToggle = { isEnabled ->
+						// Gérer l'état des vibrations ici
+						println("Vibrations activées : $isEnabled")
+						// Vous pouvez également sauvegarder cet état
+					}
+				)
+			}
 		}
 	}
 }
+
 

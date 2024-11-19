@@ -130,8 +130,9 @@ fun MainBottomBar(
 				label = { Text(text = "Joueur")}
 			)
 
-			NavigationBarItem(selected = false,
-				onClick = { /*TODO*/ },
+			NavigationBarItem(selected =  currentRoute == BottomItem.Settings.route,
+				onClick = { navController.navigate(BottomItem.Settings.route)
+						  },
 				icon = { Icon(
 					imageVector = Icons.Rounded.Settings,
 					contentDescription = null
