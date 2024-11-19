@@ -151,11 +151,11 @@ fun CollectionMenu(
 							painter = painterResource(menuStatus.collectionPopupSpecies.menuSprite),
 							contentDescription = null,
 							modifier = Modifier
-								.size(80.dp)
+								.size(69.dp)
 						)
 						Spacer(
 							modifier = Modifier
-								.size(20.dp)
+								.size(15.dp)
 						)
 						Text(
 							text = menuStatus.collectionPopupSpecies.name.toUpperCase(Locale.current),
@@ -174,7 +174,16 @@ fun CollectionMenu(
 						)
 						Spacer(
 							modifier = Modifier
-								.size(32.dp)
+								.size(4.dp)
+						)
+						Text(
+							text = "PV " + menuStatus.collectionPopupSpecies.baseStats.maxHp
+									+ "ATK " + menuStatus.collectionPopupSpecies.baseStats.attack,
+							fontSize = 12.sp
+						)
+						Spacer(
+							modifier = Modifier
+								.size(20.dp)
 						)
 						Text(
 							text = if (PlayerDex.isCaught(Dex.getSpeciesId(menuStatus.collectionPopupSpecies)))
