@@ -39,6 +39,7 @@
 	import androidx.compose.ui.graphics.Color
 	import androidx.compose.ui.res.painterResource
 	import androidx.compose.ui.text.font.FontWeight
+	import androidx.compose.ui.text.style.TextAlign
 	import androidx.compose.ui.unit.dp
 	import androidx.compose.ui.unit.sp
 	import com.example.creamarch.ui.theme.Pink80
@@ -222,9 +223,10 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 		else PlayerDex.see(Dex.getSpeciesId(capturedCreature!!.first.baseData))
 		AlertDialog(
 			onDismissRequest = {  },
-			title = { Text("Combat") },
+			title = { Text("Combat",
+				textAlign = TextAlign.Center) },
 			text = {
-				Column {
+				Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
 					HealthBar(
 						currentHealth = capturedCreature!!.first.stats.currentHp,
 						maxHealth = capturedCreature!!.first.stats.maxHp
@@ -257,13 +259,14 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 							}
 					)
 
-					Spacer(modifier = Modifier.height(16.dp))
+					//Spacer(modifier = Modifier.height(4.dp))
 
 					LazyVerticalGrid(
 						columns = GridCells.Fixed(3),
 						modifier = modifier
 							.fillMaxWidth()
-							.weight(1f)
+							.weight(1f),
+						verticalArrangement = Arrangement.spacedBy(4.dp)
 					)
 					{
 						items(playerTeam) {
@@ -272,7 +275,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 								.aspectRatio(1.5f)
 							if (it.stats.currentHp <= 0) imageMod = imageMod.background(color = Color.Red)
 							if (it != null){
-								Column(modifier = Modifier.padding(8.dp)) {
+								Column(modifier = Modifier.padding(4.dp)) {
 									Image(painter = painterResource(id = it.baseData.menuSprite),
 										contentDescription = "My creatures",
 										modifier = imageMod
@@ -287,7 +290,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 						}
 					}
 
-					Spacer(modifier = Modifier.height(16.dp))
+					//Spacer(modifier = Modifier.height(4.dp))
 				}
 			},
 			confirmButton = {
