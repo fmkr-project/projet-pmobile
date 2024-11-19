@@ -30,7 +30,6 @@
 	import androidx.compose.runtime.collectAsState
 	import androidx.compose.runtime.getValue
 	import androidx.compose.runtime.mutableIntStateOf
-	import androidx.compose.runtime.mutableStateListOf
 	import androidx.compose.runtime.mutableStateOf
 	import androidx.compose.runtime.remember
 	import androidx.compose.runtime.setValue
@@ -211,7 +210,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 	if (showDialog && capturedCreature != null) {
 
 		if (deadTeam()) showDialog = false
-		else PlayerDex.markAsSeen(Dex.getSpeciesId(capturedCreature!!.first.baseData))
+		else PlayerDex.see(Dex.getSpeciesId(capturedCreature!!.first.baseData))
 		AlertDialog(
 			onDismissRequest = {  },
 			title = { Text("Combat") },
@@ -236,7 +235,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 									playerTeam[randTeam].stats.currentHp -= capturedCreature!!.first.stats.attack
 								}
 								if (capturedCreature!!.first.stats.currentHp <= 0) {
-									PlayerDex.markAsCaught(Dex.getSpeciesId(capturedCreature!!.first.baseData))
+									PlayerDex.catch(Dex.getSpeciesId(capturedCreature!!.first.baseData))
 									showDialog = false
 									tempCreature.remove(capturedCreature!!)
 									nCreatures = nearbyCreatures.take(initialSubListSize).toList()

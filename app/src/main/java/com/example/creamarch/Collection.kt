@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
@@ -57,15 +58,18 @@ fun CollectionItem(
 	else painterResource(R.drawable.what)
 
 	Card(
-		onClick = { if (isSeen)
+		onClick =
 		{
-			onClick()
-			menuStatus.openCollectionPopup()
-			menuStatus.collectionPopupSpecies = species
-		}
-				  },
+			if (isSeen)
+			{
+				onClick()
+				menuStatus.openCollectionPopup()
+				menuStatus.collectionPopupSpecies = species
+			}
+		},
 		modifier = modifier
-			.padding(5.dp))
+			.padding(5.dp)
+	)
 	{
 		Column(
 			modifier = modifier
@@ -157,6 +161,16 @@ fun CollectionMenu(
 							text = menuStatus.collectionPopupSpecies.name.toUpperCase(Locale.current),
 							fontWeight = FontWeight.Bold,
 							fontSize = 24.sp
+						)
+						Text(
+							text = "Rencontré : " + PlayerDex.getSeen(Dex.getSpeciesId(menuStatus.collectionPopupSpecies)),
+							fontStyle = FontStyle.Italic,
+							fontSize = 12.sp
+						)
+						Text(
+							text = "Capturé : " + PlayerDex.getCaught(Dex.getSpeciesId(menuStatus.collectionPopupSpecies)),
+							fontStyle = FontStyle.Italic,
+							fontSize = 12.sp
 						)
 						Spacer(
 							modifier = Modifier
