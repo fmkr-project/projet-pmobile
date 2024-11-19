@@ -178,7 +178,7 @@ fun CollectionMenu(
 						)
 						Text(
 							text = "PV " + menuStatus.collectionPopupSpecies.baseStats.maxHp
-									+ "ATK " + menuStatus.collectionPopupSpecies.baseStats.attack,
+									+ " ATK " + menuStatus.collectionPopupSpecies.baseStats.attack,
 							fontSize = 12.sp
 						)
 						Spacer(
