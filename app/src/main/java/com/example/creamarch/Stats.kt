@@ -16,3 +16,8 @@ data class BaseStats(
     val maxHp: Int,
     val attack: Int
 )
+
+data class Iv(
+    val hpIv: Int,
+    val attackIv: Int
+)
