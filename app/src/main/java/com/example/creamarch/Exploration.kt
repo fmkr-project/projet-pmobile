@@ -223,10 +223,9 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 	}
 
 	// Code de la pop-up de combat
-	if (showDialog && capturedCreature != null && !deadTeam()) {
+	if (showDialog && capturedCreature != null) {
 
 		if (deadTeam()) showDialog = false
-		else PlayerDex.see(Dex.getSpeciesId(capturedCreature!!.first.baseData))
 		AlertDialog(
 			onDismissRequest = {  },
 			title = { Text("Combat!",
@@ -252,17 +251,19 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 									while (playerTeam[randTeam].stats.currentHp <= 0)
 										randTeam = Random.nextInt(playerTeam.size)
 									playerTeam[randTeam].stats.currentHp -= capturedCreature!!.first.stats.attack
+									if (deadTeam()) PlayerDex.see(Dex.getSpeciesId(capturedCreature!!.first.baseData))
 								}
-								if (capturedCreature!!.first.stats.currentHp <= 0) {
-									PlayerDex.catch(Dex.getSpeciesId(capturedCreature!!.first.baseData))
-									showDialog = false
-									tempCreature.remove(capturedCreature!!)
-									nCreatures = nearbyCreatures
-										.take(initialSubListSize)
-										.toList()
-									//addCreatureToTeam(capturedCreature!!.first)
-
-									changeTeam = true
+								else{
+									if (capturedCreature!!.first.stats.currentHp <= 0) {
+										PlayerDex.catch(Dex.getSpeciesId(capturedCreature!!.first.baseData))
+										showDialog = false
+										tempCreature.remove(capturedCreature!!)
+										nCreatures = nearbyCreatures
+											.take(initialSubListSize)
+											.toList()
+										if (playerTeam.size < 6) addCreatureToTeam(capturedCreature!!.first)
+										else changeTeam = true
+									}
 								}
 							}
 					)
@@ -305,6 +306,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 			},
 			confirmButton = {
 				Button(onClick = {
+					PlayerDex.see(Dex.getSpeciesId(capturedCreature!!.first.baseData))
 					showDialog = false
 				},
 					modifier = Modifier.fillMaxWidth()
@@ -356,7 +358,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 			confirmButton = {
 				Button(onClick = { changeTeam = false}) 
 				{
-					Text(text = "Annuler")
+					Text(text = "Aucune")
 				}
 			}
 
