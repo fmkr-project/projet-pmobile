@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.sp
 import com.example.creamarch.ui.theme.CreamarchTheme
 import kotlin.math.roundToInt
 
-var playerTeam = (1..6).map { Dex.species.values.random().spawnNewCreature(10) }.toMutableList()
+var playerTeam : MutableList<Creature> = (1..1).map { Dex.species[1]!!.spawnNewCreature(10) }.toMutableList()
 
 fun deadTeam(): Boolean{
 	val i = playerTeam.fold(true)
@@ -31,10 +31,10 @@ fun deadTeam(): Boolean{
 }
 
 fun clickPower(): Int{
-	return playerTeam.fold(0) { acc, creature ->
+	return (playerTeam.fold(0) { acc, creature ->
 		if (creature.stats.currentHp > 0) creature.stats.attack + acc
 		else acc
-	}
+	} * (85 .. 115).random() / 100f).toInt()
 }
 
 fun addCreatureToTeam(creature: Creature) {
