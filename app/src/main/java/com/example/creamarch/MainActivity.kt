@@ -31,6 +31,7 @@ class MainActivity : ComponentActivity() {
 	@RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
+		initializePlayerTeam(this)
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 			if (ActivityCompat.checkSelfPermission(
@@ -136,6 +137,7 @@ class MainActivity : ComponentActivity() {
 
 	override fun onDestroy() {
 		super.onDestroy()
+		savePlayerTeamState(this)
 		val intent = Intent(this, StepCounterService::class.java)
 		stopService(intent)
 	}
