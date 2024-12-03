@@ -181,6 +181,20 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 		dist.toInt()
 	}
 
+	var lastHealedDistance by remember { mutableStateOf(0) }
+
+
+	if (walkedDistance >= lastHealedDistance + 100) {
+		val healingAmount = 10
+
+
+		playerTeam.forEach { creature ->
+			val newHp = (creature.stats.currentHp + healingAmount).coerceAtMost(creature.stats.maxHp)
+			creature.stats.currentHp = newHp
+		}
+		lastHealedDistance = (walkedDistance / 100) * 100
+	}
+
 	//val walkedDistance = dist.toInt()
 
 	//Log.d("initial distance", initialDistance.toString())
