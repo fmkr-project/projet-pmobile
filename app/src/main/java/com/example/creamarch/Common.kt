@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -113,10 +114,17 @@ fun MainBottomBar(
 				containerColor = Color.White,
 				elevation = FloatingActionButtonDefaults.elevation(0.dp)
 				) {
+				/*
 				Text(
 					text = "C",
 					fontSize = 40.sp,
 					color = Color.Red,
+				)*/
+				Image(
+					painter = painterResource(R.drawable.bleutruk_icon),
+					contentDescription = null,
+					modifier = Modifier
+						.size(48.dp)
 				)
 			}
 

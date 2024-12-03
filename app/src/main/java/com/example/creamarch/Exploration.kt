@@ -17,6 +17,7 @@
 	import androidx.compose.foundation.layout.height
 	import androidx.compose.foundation.layout.padding
 	import androidx.compose.foundation.layout.size
+	import androidx.compose.foundation.layout.width
 	import androidx.compose.foundation.layout.wrapContentHeight
 	import androidx.compose.foundation.lazy.LazyColumn
 	import androidx.compose.foundation.lazy.grid.GridCells
@@ -24,6 +25,7 @@
 	import androidx.compose.foundation.lazy.grid.items
 	import androidx.compose.foundation.lazy.items
 	import androidx.compose.material3.AlertDialog
+	import androidx.compose.material3.BasicAlertDialog
 	import androidx.compose.material3.Button
 	import androidx.compose.material3.Card
 	import androidx.compose.material3.Text
@@ -38,9 +40,17 @@
 	import androidx.compose.ui.Modifier
 	import androidx.compose.ui.graphics.Color
 	import androidx.compose.ui.res.painterResource
+	import androidx.compose.ui.text.SpanStyle
+	import androidx.compose.ui.text.buildAnnotatedString
+	import androidx.compose.ui.text.font.FontStyle
 	import androidx.compose.ui.text.font.FontWeight
+	import androidx.compose.ui.text.style.TextAlign
+	import androidx.compose.ui.text.style.TextDecoration
+	import androidx.compose.ui.text.withStyle
+	import androidx.compose.ui.unit.TextUnit
 	import androidx.compose.ui.unit.dp
 	import androidx.compose.ui.unit.sp
+	import androidx.compose.ui.window.Dialog
 	import com.example.creamarch.ui.theme.Pink80
 	import com.example.creamarch.ui.theme.Purple80
 	import com.example.creamarch.ui.theme.PurpleGrey80
@@ -59,12 +69,12 @@
 	}
 
 	val legendary = Pair(
-		first = Dex.species[666]!!.spawnNewCreature(50),
+		first = Dex.species.values.filter {  it.rarity == Rarity.Legendary }.random().spawnNewCreature(20),
 		second = 100)
 
 	var tempCreature = (1..22).map {
 		Pair(
-			first = Dex.species.values.filter {  it != legendary.first.baseData}.random().spawnNewCreature(10), // TODO random levels
+			first = Dex.species.values.filter {  it.rarity != Rarity.Legendary }.random().spawnNewCreature(5), // TODO random levels
 			second = distance()
 		)
 	}.toMutableList()
@@ -160,8 +170,8 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 
 	val initialDistance = distanceTracker.loadTotalDistance().toInt()
 	val dist by StepCounterService.distanceWalked.collectAsState(initial = 0.0)
-	val walkedDistance by distanceTracker.distance.collectAsState(initial = initialDistance)
-	/*walkedDistance = if (debug)
+	//val walkedDistance by distanceTracker.distance.collectAsState(initial = initialDistance)
+	val walkedDistance = if (debug)
 	{
 		//val walkedDistance
 		2000
@@ -169,7 +179,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 	else
 	{
 		dist.toInt()
-	}*/
+	}
 
 	//val walkedDistance = dist.toInt()
 
@@ -200,31 +210,30 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 		showDialog = true
 	}
 
-	var isButtonEnabled by remember { mutableStateOf(true) }
-	var disableButtonTemporarily by remember { mutableStateOf(false) }
-
-	if (disableButtonTemporarily) {
-		LaunchedEffect(Unit) {
-			delay(1000L)
-			isButtonEnabled = true
-			disableButtonTemporarily = false
-		}
-	}
-
 	var changeTeam by remember {
 		mutableStateOf(false)
+	}
+
+	var youSurOfChange by remember {
+		mutableStateOf(false)
+	}
+
+	var whichChange by remember {
+		mutableIntStateOf(0)
 	}
 
 	// Code de la pop-up de combat
 	if (showDialog && capturedCreature != null && !deadTeam()) {
 
 		if (deadTeam()) showDialog = false
-		else PlayerDex.see(Dex.getSpeciesId(capturedCreature!!.first.baseData))
 		AlertDialog(
 			onDismissRequest = {  },
-			title = { Text("Combat") },
+			title = { Text("Combat!",
+				fontSize = 30.sp,
+				textAlign = TextAlign.Center) },
 			text = {
-				Column {
+				Column(verticalArrangement = Arrangement.SpaceEvenly,
+					modifier = Modifier.fillMaxHeight()) {
 					HealthBar(
 						currentHealth = capturedCreature!!.first.stats.currentHp,
 						maxHealth = capturedCreature!!.first.stats.maxHp
@@ -242,6 +251,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 									while (playerTeam[randTeam].stats.currentHp <= 0)
 										randTeam = Random.nextInt(playerTeam.size)
 									playerTeam[randTeam].stats.currentHp -= capturedCreature!!.first.stats.attack
+									if (deadTeam()) PlayerDex.see(Dex.getSpeciesId(capturedCreature!!.first.baseData))
 								}
 								if (capturedCreature!!.first.stats.currentHp <= 0) {
 									PlayerDex.catch(Dex.getSpeciesId(capturedCreature!!.first.baseData))
@@ -250,29 +260,32 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 									nCreatures = nearbyCreatures
 										.take(initialSubListSize)
 										.toList()
-									addCreatureToTeam(capturedCreature!!.first)
-
-									//changeTeam = true
+									if (playerTeam.size < 6) addCreatureToTeam(capturedCreature!!.first)
+									else changeTeam = true
 								}
+								Log.d("StepCounterService", "${capturedCreature!!.first.stats.currentHp}")
 							}
 					)
 
-					Spacer(modifier = Modifier.height(16.dp))
+					//Spacer(modifier = Modifier.height(4.dp))
 
 					LazyVerticalGrid(
 						columns = GridCells.Fixed(3),
-						modifier = modifier
+						modifier = Modifier
 							.fillMaxWidth()
 							.weight(1f)
+						,
+						verticalArrangement = Arrangement.SpaceEvenly,
+						horizontalArrangement = Arrangement.SpaceEvenly
 					)
 					{
 						items(playerTeam) {
 							var imageMod = Modifier
 								.fillMaxWidth()
-								.aspectRatio(1.5f)
+								.aspectRatio(1f)
 							if (it.stats.currentHp <= 0) imageMod = imageMod.background(color = Color.Red)
 							if (it != null){
-								Column(modifier = Modifier.padding(8.dp)) {
+								Column(modifier = Modifier.padding(4.dp)) {
 									Image(painter = painterResource(id = it.baseData.menuSprite),
 										contentDescription = "My creatures",
 										modifier = imageMod
@@ -287,25 +300,24 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 						}
 					}
 
-					Spacer(modifier = Modifier.height(16.dp))
+					//Spacer(modifier = Modifier.height(4.dp))
 				}
 			},
 			confirmButton = {
 				Button(onClick = {
-					val run = Random.nextInt(100)
-					if (run < 75) showDialog = false
-					else {
-						isButtonEnabled = false
-						disableButtonTemporarily = true
-					}
+					PlayerDex.see(Dex.getSpeciesId(capturedCreature!!.first.baseData))
+					showDialog = false
 				},
-					enabled = isButtonEnabled) {
-					Text("Fuite")
+					modifier = Modifier.fillMaxWidth()
+				) {
+					Text("Fuite",
+						fontSize = 30.sp,
+						textAlign = TextAlign.Center)
 				}
 			},
 			modifier = Modifier
 				.fillMaxWidth()
-				.fillMaxHeight(0.75f)
+				.fillMaxHeight(0.8f)
 		)
 	}
 	//Code du choix de la creature a garder
@@ -315,7 +327,16 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 			modifier = Modifier
 				.fillMaxSize(),
 			onDismissRequest = {  },
-			title = { Text(text = "Quelle créature liberer?")},
+			title = { Text(text = buildAnnotatedString {
+				append("Quelle créature voulez-vous remplacer par ")
+				withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+					append(capturedCreature!!.first.baseData.name)
+					append(" niv ")
+					append(capturedCreature!!.first.level.toString())
+				}
+				append("?")
+			},
+				fontSize = 18.sp)},
 			text = {
 				LazyColumn {
 					items(playerTeam){
@@ -324,32 +345,75 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 							pv = it.stats.currentHp,
 							maxPV = it.stats.maxHp,
 							modifier = Modifier
-								.padding(10.dp)
+								.padding(8.dp)
 								.clickable {
-									addCreatureToTeam(
-										capturedCreature!!.first,
-										playerTeam.indexOf(it)
-									)
-									changeTeam = false
+									youSurOfChange = true
+									whichChange = playerTeam.indexOf(it)
 								}
 						)
 					}
 				}
 			},
 			confirmButton = {
-				Button(onClick = { changeTeam = false}) {
-					TeamMember(
-						creature = capturedCreature!!.first,
-						pv = capturedCreature!!.first.stats.currentHp,
-						maxPV = capturedCreature!!.first.stats.maxHp,
-						modifier = Modifier.fillMaxHeight(0.1f)
-							.background(color = Pink80)
-							.padding(10.dp)) }
+				Button(onClick = { changeTeam = false}) 
+				{
+					Text(text = "Aucune")
 				}
+			}
 
 
 		)
 	}
+
+	// Popup pour s'assurer du changement de créature
+	if (youSurOfChange){
+		Dialog(onDismissRequest = {  })
+			{
+				Column ( modifier = Modifier
+					.fillMaxHeight(0.4f)
+					.fillMaxWidth()
+					.background(Color.White),
+					verticalArrangement = Arrangement.SpaceEvenly)
+
+				{
+					Text(text = "Etes-vous sûr de votre choix?",
+						fontSize = 52.sp,
+						lineHeight = 52.sp
+					)
+					Row(modifier = Modifier.fillMaxWidth()
+						,horizontalArrangement = Arrangement.SpaceEvenly) {
+						Button(onClick = {
+							addCreatureToTeam(
+								capturedCreature!!.first,
+								whichChange
+							)
+							changeTeam = false
+							youSurOfChange = false
+						}
+							//,modifier = Modifier.fillMaxSize(0.25f)
+						)
+						{
+							Text(text = "Oui",
+								fontSize = 30.sp)
+						}
+						
+						Button(onClick = {
+							youSurOfChange = false
+							changeTeam = true
+						}
+							//,modifier = Modifier.fillMaxSize(0.25f)
+						)
+						{
+							Text(text = "Non",
+								fontSize = 30.sp)
+						}
+					}
+				}
+			}
+
+	}
+
+
 	// Code de la page de base
 	var nextIndex by remember {
 		mutableIntStateOf(0)
@@ -357,7 +421,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 	var tillNext by remember {
 		mutableIntStateOf(nCreatures[nextIndex].second - walkedDistance)
 	}
-	nextIndex = nearbyCreatures.indexOfFirst { it.second > walkedDistance }
+	nextIndex = nearbyCreatures.indexOfFirst { it.second >= walkedDistance }
 	tillNext = if (nextIndex != -1) nearbyCreatures[nextIndex].second - walkedDistance else 0
 	// Compose
 
