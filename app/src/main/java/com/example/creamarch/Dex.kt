@@ -9,31 +9,31 @@ object Dex
 	// Associate an ID to a species.
 	var species: Map<Int, CreatureSpecies> = mapOf(
 		1 to CreatureSpecies(
-			"Bleutruk", Rarity.Uncommon, R.drawable.bleutruk_icon, BaseStats(50, 7)
+			"Bleutruk", Rarity.Uncommon, R.drawable.bleutruk_icon, BaseStats(50, 70)
 		),
 		2 to CreatureSpecies(
-			"Cylindre", Rarity.Common, R.drawable.cylindre_icon, BaseStats(30, 8)
+			"Cylindre", Rarity.Common, R.drawable.cylindre_icon, BaseStats(10, 55)
 		),
 		5 to CreatureSpecies(
-			"Tronbon", Rarity.Common, R.drawable.tronbon_icon, BaseStats(60, 3)
+			"Tronbon", Rarity.Common, R.drawable.tronbon_icon, BaseStats(60, 35)
 		),
 		6 to CreatureSpecies(
-			"Feunaitr", Rarity.Uncommon, R.drawable.feunaitr_icon, BaseStats(80, 5)
+			"Feunaitr", Rarity.Uncommon, R.drawable.feunaitr_icon, BaseStats(80, 40)
 		),
 		7 to CreatureSpecies(
-			"Oématlo", Rarity.Common, R.drawable.oematlo_icon, BaseStats(45, 4)
+			"Oématlo", Rarity.Common, R.drawable.oematlo_icon, BaseStats(25, 35)
 		),
 		9 to CreatureSpecies(
-			"Chaiziqea", Rarity.Uncommon, R.drawable.chaiziqea_icon, BaseStats(70, 6)
+			"Chaiziqea", Rarity.Uncommon, R.drawable.chaiziqea_icon, BaseStats(55, 40)
 		),
 		10 to CreatureSpecies(
-			"Foteuyiqea", Rarity.Rare, R.drawable.foteuyiqea_icon, BaseStats(100, 8)
+			"Foteuyiqea", Rarity.Rare, R.drawable.foteuyiqea_icon, BaseStats(90, 60)
 		),
 		11 to CreatureSpecies(
-			"Kanapay", Rarity.Epic, R.drawable.kanapay_icon, BaseStats(120, 10)
+			"Kanapay", Rarity.Epic, R.drawable.kanapay_icon, BaseStats(120, 85)
 		),
 		666 to CreatureSpecies(
-			"Teoridukomplo", Rarity.Legendary, R.drawable.teoridukomplo_icon, BaseStats(1000, 25)
+			"Teoridukomplo", Rarity.Legendary, R.drawable.teoridukomplo_icon, BaseStats(1000, 100)
 		)
 	)
 
