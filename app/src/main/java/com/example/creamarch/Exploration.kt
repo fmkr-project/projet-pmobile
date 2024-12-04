@@ -69,12 +69,12 @@
 	}
 
 	val legendary = Pair(
-		first = Dex.species[666]!!.spawnNewCreature(50),
+		first = Dex.species.values.filter {  it.rarity == Rarity.Legendary }.random().spawnNewCreature(20),
 		second = 100)
 
 	var tempCreature = (1..22).map {
 		Pair(
-			first = Dex.species.values.filter {  it != legendary.first.baseData}.random().spawnNewCreature(10), // TODO random levels
+			first = Dex.species.values.filter {  it.rarity != Rarity.Legendary }.random().spawnNewCreature(5), // TODO random levels
 			second = distance()
 		)
 	}.toMutableList()
@@ -181,6 +181,20 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 		dist.toInt()
 	}
 
+	var lastHealedDistance by remember { mutableStateOf(0) }
+
+
+	if (walkedDistance >= lastHealedDistance + 100) {
+		val healingAmount = 10
+
+
+		playerTeam.forEach { creature ->
+			val newHp = (creature.stats.currentHp + healingAmount).coerceAtMost(creature.stats.maxHp)
+			creature.stats.currentHp = newHp
+		}
+		lastHealedDistance = (walkedDistance / 100) * 100
+	}
+
 	//val walkedDistance = dist.toInt()
 
 	//Log.d("initial distance", initialDistance.toString())
@@ -223,7 +237,7 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 	}
 
 	// Code de la pop-up de combat
-	if (showDialog && capturedCreature != null) {
+	if (showDialog && capturedCreature != null && !deadTeam()) {
 
 		if (deadTeam()) showDialog = false
 		AlertDialog(
@@ -253,18 +267,17 @@ fun ExplorationMenu(distanceTracker: DistanceTracker,
 									playerTeam[randTeam].stats.currentHp -= capturedCreature!!.first.stats.attack
 									if (deadTeam()) PlayerDex.see(Dex.getSpeciesId(capturedCreature!!.first.baseData))
 								}
-								else{
-									if (capturedCreature!!.first.stats.currentHp <= 0) {
-										PlayerDex.catch(Dex.getSpeciesId(capturedCreature!!.first.baseData))
-										showDialog = false
-										tempCreature.remove(capturedCreature!!)
-										nCreatures = nearbyCreatures
-											.take(initialSubListSize)
-											.toList()
-										if (playerTeam.size < 6) addCreatureToTeam(capturedCreature!!.first)
-										else changeTeam = true
-									}
+								if (capturedCreature!!.first.stats.currentHp <= 0) {
+									PlayerDex.catch(Dex.getSpeciesId(capturedCreature!!.first.baseData))
+									showDialog = false
+									tempCreature.remove(capturedCreature!!)
+									nCreatures = nearbyCreatures
+										.take(initialSubListSize)
+										.toList()
+									if (playerTeam.size < 6) addCreatureToTeam(capturedCreature!!.first)
+									else changeTeam = true
 								}
+								Log.d("StepCounterService", "${capturedCreature!!.first.stats.currentHp}")
 							}
 					)
 

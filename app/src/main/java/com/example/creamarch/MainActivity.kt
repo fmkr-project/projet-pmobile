@@ -31,6 +31,7 @@ class MainActivity : ComponentActivity() {
 	@RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
+		initializePlayerTeam(this)
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 			if (ActivityCompat.checkSelfPermission(
@@ -55,7 +56,7 @@ class MainActivity : ComponentActivity() {
 		distanceTracker = DistanceTracker(this)
 
 		// Vérifiez et demandez les permissions de localisation avant de commencer le suivi
-		/*if (ActivityCompat.checkSelfPermission(
+		if (ActivityCompat.checkSelfPermission(
 				this,
 				Manifest.permission.ACCESS_FINE_LOCATION
 			) == PackageManager.PERMISSION_GRANTED
@@ -72,7 +73,7 @@ class MainActivity : ComponentActivity() {
 			}
 		} else {
 			requestFineLocationPermission()
-		}*/
+		}
 
 		setContent {
 			CreamarchTheme {
@@ -136,6 +137,7 @@ class MainActivity : ComponentActivity() {
 
 	override fun onDestroy() {
 		super.onDestroy()
+		savePlayerTeamState(this)
 		val intent = Intent(this, StepCounterService::class.java)
 		stopService(intent)
 	}

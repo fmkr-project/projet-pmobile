@@ -1,5 +1,6 @@
 package com.example.creamarch
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,10 +20,43 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.gson.Gson
 import com.example.creamarch.ui.theme.CreamarchTheme
+import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken
 import kotlin.math.roundToInt
 
-var playerTeam : MutableList<Creature> = (1..1).map { Dex.species[1]!!.spawnNewCreature(10) }.toMutableList()
+var playerTeam: MutableList<Creature> = mutableListOf()
+
+fun initializePlayerTeam(context: Context) {
+	playerTeam = loadPlayerTeam(context)
+}
+
+// Appeler cette fonction pour sauvegarder l'état avant de quitter l'application
+fun savePlayerTeamState(context: Context) {
+	savePlayerTeam(context)
+}
+
+fun savePlayerTeam(context: Context) {
+	val sharedPreferences = context.getSharedPreferences("game_data", Context.MODE_PRIVATE)
+	val editor = sharedPreferences.edit()
+
+	val gson = Gson()
+	val json = gson.toJson(playerTeam) // Sérialiser la liste en JSON
+	editor.putString("player_team", json)
+	editor.apply()
+}
+
+fun loadPlayerTeam(context: Context): MutableList<Creature> {
+	val sharedPreferences = context.getSharedPreferences("game_data", Context.MODE_PRIVATE)
+	val json = sharedPreferences.getString("player_team", null)
+
+	return if (json != null) {
+		val type = object : TypeToken<MutableList<Creature>>() {}.type
+		Gson().fromJson(json, type) // Désérialiser la liste
+	} else {
+		(1..1).map { Dex.species[1]!!.spawnNewCreature(10) }.toMutableList()
+	}
+}
 
 fun deadTeam(): Boolean{
 	val i = playerTeam.fold(true)
