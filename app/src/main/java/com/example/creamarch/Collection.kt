@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedIconButton
@@ -131,82 +132,99 @@ fun CollectionMenu(
 				}
 			}
 
+			Log.d("d", isCardOpen.toString())
 			// card
 			if (isCardOpen) {
-				Card(
-					modifier = modifier
-						.padding(80.dp)
-						.fillMaxSize()
-				)
-				{
-					Column(
-						modifier = Modifier
-							.fillMaxSize()
-							.padding(20.dp),
-						horizontalAlignment = Alignment.CenterHorizontally,
-						verticalArrangement = Arrangement.Center
-					)
+				AlertDialog(
+					onDismissRequest = {},
+					title =
 					{
-						Image(
-							painter = painterResource(menuStatus.collectionPopupSpecies.menuSprite),
-							contentDescription = null,
-							modifier = Modifier
-								.size(69.dp)
-						)
-						Spacer(
-							modifier = Modifier
-								.size(15.dp)
-						)
 						Text(
 							text = menuStatus.collectionPopupSpecies.name.toUpperCase(Locale.current),
-							fontWeight = FontWeight.Bold,
-							fontSize = 24.sp
+							fontSize = 32.sp,
+							fontWeight = FontWeight.Bold
 						)
-						Text(
-							text = "Rencontré : " + PlayerDex.getSeen(Dex.getSpeciesId(menuStatus.collectionPopupSpecies)),
-							fontStyle = FontStyle.Italic,
-							fontSize = 12.sp
-						)
-						Text(
-							text = "Capturé : " + PlayerDex.getCaught(Dex.getSpeciesId(menuStatus.collectionPopupSpecies)),
-							fontStyle = FontStyle.Italic,
-							fontSize = 12.sp
-						)
-						Spacer(
+					},
+					text =
+					{
+						Column(
 							modifier = Modifier
-								.size(4.dp)
-						)
-						Text(
-							text = "PV " + menuStatus.collectionPopupSpecies.baseStats.maxHp
-									+ " ATK " + menuStatus.collectionPopupSpecies.baseStats.attack,
-							fontSize = 12.sp
-						)
-						Spacer(
-							modifier = Modifier
-								.size(20.dp)
-						)
-						Text(
-							text = if (PlayerDex.isCaught(Dex.getSpeciesId(menuStatus.collectionPopupSpecies)))
-								Dex.descriptions[Dex.getSpeciesId(menuStatus.collectionPopupSpecies)]!!
-							else "??? ? ???? ? ????? ????????? ?? ??????",
-							fontSize = 18.sp,
-							textAlign = TextAlign.Center
-						)
-						Spacer(
-							modifier = Modifier
-								.size(8.dp)
-								.weight(1f)
-						)
-						OutlinedIconButton(
-							onClick = { isCardOpen = false },
-							modifier = Modifier
-								.size(52.dp)
+								.fillMaxWidth()
+								.fillMaxHeight(0.5f)
+								.padding(20.dp),
+							horizontalAlignment = Alignment.CenterHorizontally,
+							verticalArrangement = Arrangement.Center
 						)
 						{
-							Icon(Icons.Default.Close, contentDescription = null)
+							Image(
+								painter = painterResource(menuStatus.collectionPopupSpecies.menuSprite),
+								contentDescription = null,
+								modifier = Modifier
+									.size(96.dp)
+							)
+							Spacer(
+								modifier = Modifier
+									.size(15.dp)
+							)
+							Text(
+								text = "Rencontré : " + PlayerDex.getSeen(
+									Dex.getSpeciesId(
+										menuStatus.collectionPopupSpecies
+									)
+								),
+								fontStyle = FontStyle.Italic,
+								fontSize = 20.sp
+							)
+							Text(
+								text = "Capturé : " + PlayerDex.getCaught(
+									Dex.getSpeciesId(
+										menuStatus.collectionPopupSpecies
+									)
+								),
+								fontStyle = FontStyle.Italic,
+								fontSize = 20.sp
+							)
+							Spacer(
+								modifier = Modifier
+									.size(12.dp)
+							)
+							Text(
+								text = "PV " + menuStatus.collectionPopupSpecies.baseStats.maxHp
+										+ " ATK " + menuStatus.collectionPopupSpecies.baseStats.attack,
+								fontSize = 20.sp,
+								fontWeight = FontWeight.Bold
+							)
+							Spacer(
+								modifier = Modifier
+									.size(28.dp)
+							)
+							Text(
+								text = if (PlayerDex.isCaught(Dex.getSpeciesId(menuStatus.collectionPopupSpecies)))
+									Dex.descriptions[Dex.getSpeciesId(menuStatus.collectionPopupSpecies)]!!
+								else "??? ? ???? ? ????? ????????? ?? ??????",
+								fontSize = 18.sp,
+								textAlign = TextAlign.Center
+							)
+							Spacer(
+								modifier = Modifier
+									.size(8.dp)
+									.weight(1f)
+							)
+							OutlinedIconButton(
+								onClick = {
+									isCardOpen = false
+									menuStatus.collectionPopupIsOpen = false
+										  },
+								modifier = Modifier
+									.size(52.dp)
+							)
+							{
+								Icon(Icons.Default.Close, contentDescription = null)
+							}
 						}
-					}
-				}
+					},
+					confirmButton = {}
+				)
 			}
 		}
 	}
