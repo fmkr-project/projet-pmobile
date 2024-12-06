@@ -1,7 +1,10 @@
 package com.example.creamarch
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.content.SharedPreferences
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -15,6 +18,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 class StepCounterService : Service(), SensorEventListener {
 
@@ -29,21 +33,29 @@ class StepCounterService : Service(), SensorEventListener {
         val distanceWalked = MutableStateFlow(0.0) // Distance totale en mètres
     }
 
+    private var totalDistance: Double = 0.0
+    private var dailyDistance: Double = 0.0
+    private lateinit var sharedPreferences: SharedPreferences
+
     override fun onCreate() {
         super.onCreate()
-        Log.d("StepCounterService", "Service onCreate appelé")
+        sharedPreferences = getSharedPreferences("StepCounterPrefs", MODE_PRIVATE)
+        totalDistance = sharedPreferences.getFloat("totalDistance", 0f).toDouble()
+        dailyDistance = sharedPreferences.getFloat("dailyDistance", 0f).toDouble()
+
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
         stepSensor?.let {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
         }
-        Log.d("StepCounterService", "Distance totale parcourue : m")
 
-        // Lancer une coroutine pour loguer la distance toutes les 2 secondes
+        // Planifier une réinitialisation quotidienne
+        scheduleDailyReset()
+
         serviceScope.launch {
             while (true) {
-                Log.d("StepCounterService", "Distance totale parcourue : ${distanceWalked.value} m")
-                delay(2000L) // Attendre 2 secondes avant de répéter
+                Log.d("StepCounterService", "Distance aujourd'hui : $dailyDistance m, Total : $totalDistance m")
+                delay(2000L) // Log toutes les 2 secondes
             }
         }
     }
@@ -51,18 +63,55 @@ class StepCounterService : Service(), SensorEventListener {
     override fun onDestroy() {
         super.onDestroy()
         sensorManager.unregisterListener(this)
-        serviceScope.cancel() // Arrêter toutes les coroutines lancées
+        serviceScope.cancel()
+
+
+        // Sauvegarder les distances dans SharedPreferences
+        sharedPreferences.edit().apply {
+            putFloat("totalDistance", totalDistance.toFloat())
+            putFloat("dailyDistance", dailyDistance.toFloat())
+            apply()
+        }
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_STEP_DETECTOR) {
-            stepCount++
-            val distance = stepCount * stepLength
-            distanceWalked.value = distance
+            val stepDistance = stepLength
+            dailyDistance += stepDistance
+            totalDistance += stepDistance
+            distanceWalked.value = dailyDistance
         }
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
+    private fun scheduleDailyReset() {
+        val resetIntent = Intent(this, ResetReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            this, 0, resetIntent, PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+        val triggerTime = getNextMidnightMillis()
+        alarmManager.setRepeating(
+            AlarmManager.RTC_WAKEUP,
+            triggerTime,
+            AlarmManager.INTERVAL_DAY,
+            pendingIntent
+        )
+    }
+    private fun getNextMidnightMillis(): Long {
+        val now = System.currentTimeMillis()
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = now
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+            add(Calendar.DAY_OF_YEAR, 1)
+        }
+        return calendar.timeInMillis
+    }
 }

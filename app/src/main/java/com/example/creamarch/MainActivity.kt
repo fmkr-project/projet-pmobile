@@ -32,6 +32,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		initializePlayerTeam(this)
+		initializeCreatures()
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 			if (ActivityCompat.checkSelfPermission(
