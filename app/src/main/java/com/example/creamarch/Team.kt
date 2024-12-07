@@ -29,6 +29,7 @@ var playerTeam: MutableList<Creature> = mutableListOf()
 
 fun initializePlayerTeam(context: Context) {
 	playerTeam = loadPlayerTeam(context)
+	playerTeam.map { it.stats.initializeCurrentHpState() }
 }
 
 // Appeler cette fonction pour sauvegarder l'état avant de quitter l'application
@@ -37,6 +38,7 @@ fun savePlayerTeamState(context: Context) {
 }
 
 fun savePlayerTeam(context: Context) {
+	playerTeam.map { it.stats.copy(currentHp = it.stats.currentHpState.intValue) }
 	val sharedPreferences = context.getSharedPreferences("game_data", Context.MODE_PRIVATE)
 	val editor = sharedPreferences.edit()
 
@@ -50,27 +52,25 @@ fun loadPlayerTeam(context: Context): MutableList<Creature> {
 	val sharedPreferences = context.getSharedPreferences("game_data", Context.MODE_PRIVATE)
 	val json = sharedPreferences.getString("player_team", null)
 
-	if (json != null)
-	{
+	if (json != null) {
 		val type = object : TypeToken<MutableList<Creature>>() {}.type
-		return Gson().fromJson(json, type) // Désérialiser la liste
-	}
-	else
-	{
-		PlayerDex.catch(1)
+		val creatures = Gson().fromJson<MutableList<Creature>>(json, type) // Désérialiser la liste
+		creatures.forEach { it.stats.initializeCurrentHpState() }
+		return creatures
+	} else {
 		return (1..1).map { Dex.species[1]!!.spawnNewCreature(10) }.toMutableList()
 	}
 }
 
 fun deadTeam(): Boolean{
 	val i = playerTeam.fold(true)
-	{ acc, creature -> acc && (creature.stats.currentHp <= 0) }
+	{ acc, creature -> acc && (creature.stats.currentHpState.intValue <= 0) }
 	return i
 }
 
 fun clickPower(): Int{
 	return (playerTeam.fold(0) { acc, creature ->
-		if (creature.stats.currentHp > 0) creature.stats.attack + acc
+		if (creature.stats.currentHpState.intValue > 0) creature.stats.attack + acc
 		else acc
 	} * (85 .. 115).random() / 100f).toInt()
 }
@@ -80,7 +80,7 @@ fun addCreatureToTeam(creature: Creature) {
 	if (playerTeam.size >= 6) {
 		playerTeam.removeAt(5)  // Retire le dernier élément (indice 5)
 	}
-	creature.stats.currentHp = creature.stats.maxHp
+	creature.stats.currentHpState.intValue = creature.stats.maxHp
 
 	// Ajoute la créature en première position
 	playerTeam.add(0, creature)  // Insere la créature à l'index 0 (en debut de liste)
@@ -88,7 +88,7 @@ fun addCreatureToTeam(creature: Creature) {
 
 fun addCreatureToTeam(creature: Creature, index: Int){
 	playerTeam.removeAt(index)
-	creature.stats.currentHp = creature.stats.maxHp
+	creature.stats.currentHpState.intValue = creature.stats.maxHp
 	playerTeam.add(index, creature)
 }
 
@@ -147,17 +147,16 @@ fun TeamMenu(modifier: Modifier = Modifier)
 	// Get the player's team.
 	// TODO temp
 	// TODO ensure there are no more than 6 creatures in the team
-	for (creature in playerTeam)
-		if (creature.stats.currentHp < 0)
-			creature.stats.currentHp = 0
-
-	LazyColumn (modifier = modifier) {
-		items(playerTeam) {
-			TeamMember(
-				creature = it,
-				pv = it.stats.currentHp,
-				maxPV = it.stats.maxHp,
-				modifier = Modifier.padding(10.dp))
+	for (creature in playerTeam) {
+		LazyColumn(modifier = modifier) {
+			items(playerTeam) {
+				TeamMember(
+					creature = it,
+					pv = it.stats.currentHpState.intValue.coerceAtLeast(0),
+					maxPV = it.stats.maxHp,
+					modifier = Modifier.padding(10.dp)
+				)
+			}
 		}
 	}
 }

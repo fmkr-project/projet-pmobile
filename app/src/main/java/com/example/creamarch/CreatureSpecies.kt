@@ -1,5 +1,6 @@
 package com.example.creamarch
 
+import com.google.gson.annotations.SerializedName
 import kotlin.math.floor
 import kotlin.random.Random
 
@@ -14,10 +15,10 @@ enum class Rarity
 
 // Class to store base creature data.
 data class CreatureSpecies(
-	val name: String,
-	val rarity: Rarity,
-	val menuSprite: Int,
-	val baseStats: BaseStats
+	@SerializedName("name") val name: String,
+	@SerializedName("rarity") val rarity: Rarity,
+	@SerializedName("sprite") val menuSprite: Int,
+	@SerializedName("baseStats") val baseStats: BaseStats
 )
 {
 	fun spawnNewCreature(level: Int): Creature
@@ -38,6 +39,7 @@ data class CreatureSpecies(
 	{
 		// Use Pokemon gen III+ formula.
 		return TeamStats(
+			floor((2 * baseStats.maxHp.toDouble() + iv.hpIv) * level / 100).toInt() + level + 10,
 			floor((2 * baseStats.maxHp.toDouble() + iv.hpIv) * level / 100).toInt() + level + 10,
 			floor((2 * baseStats.attack.toDouble() + iv.attackIv) * level / 100).toInt()
 		)

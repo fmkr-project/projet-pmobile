@@ -1,7 +1,6 @@
 package com.example.creamarch
 
 import DistanceTracker
-import LocationService
 import android.Manifest
 import android.app.AlertDialog
 import android.content.Intent
@@ -14,12 +13,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.interaction.HoverInteraction
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import com.example.creamarch.ui.theme.CreamarchTheme
 
@@ -134,6 +127,15 @@ class MainActivity : ComponentActivity() {
 	private fun startLocationService() {
 		val intent = Intent(this, LocationService::class.java)
 		startService(intent)
+	}
+
+	override fun onStart() {
+		super.onStart()
+		initializePlayerTeam(this)
+	}
+	override fun onStop() {
+		super.onStop()
+		savePlayerTeamState(this)
 	}
 
 	override fun onDestroy() {

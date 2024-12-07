@@ -175,7 +175,7 @@ fun ExplorationMenu(
 	val dist by StepCounterService.distanceWalked.collectAsState(initial = 0.0)
 	val walkedDistance = if (debug) 2000 else dist.toInt()
 
-	var lastHealedDistance by remember { mutableStateOf(0) }
+	var lastHealedDistance by remember { mutableIntStateOf(0) }
 
 
 	if (walkedDistance >= lastHealedDistance + 100) {
@@ -184,7 +184,7 @@ fun ExplorationMenu(
 
 		playerTeam.forEach { creature ->
 			val newHp = (creature.stats.currentHp + healingAmount).coerceAtMost(creature.stats.maxHp)
-			creature.stats.currentHp = newHp
+			creature.stats.currentHpState.intValue = newHp
 		}
 		lastHealedDistance = (walkedDistance / 100) * 100
 	}
@@ -203,12 +203,12 @@ fun ExplorationMenu(
 		capturedCreature = creature
 		showDialog = true // Ouvrir la popup de combat
 	}
-
+/*
 	fun addCreatureToTeam(creature: Creature, index: Int = -1) {
 		if (index == -1) playerTeam.add(creature)
 		else playerTeam[index] = creature
 	}
-
+*/
 	// Calculer l'index et la distance jusqu'à la prochaine créature
 	val nextIndex = nearbyCreatures.indexOfFirst { it.second > walkedDistance }
 	val tillNext = if (nextIndex != -1) nearbyCreatures[nextIndex].second - walkedDistance else 0
@@ -241,7 +241,7 @@ fun ExplorationMenu(
 		// Liste des créatures
 		LazyColumn {
 			items(nCreatures) { creature ->
-				creature?.let {
+				creature.let {
 					val isCapturable = it.second <= walkedDistance
 					CreatureItem(
 						creature = it.first,
@@ -267,7 +267,7 @@ fun ExplorationMenu(
 						modifier = Modifier.fillMaxHeight()
 					) {
 						HealthBar(
-							currentHealth = capturedCreature!!.first.stats.currentHp,
+							currentHealth = capturedCreature!!.first.stats.currentHpState.intValue,
 							maxHealth = capturedCreature!!.first.stats.maxHp
 						)
 						Image(
@@ -277,15 +277,17 @@ fun ExplorationMenu(
 								.fillMaxWidth()
 								.aspectRatio(1.5f)
 								.clickable {
-									capturedCreature!!.first.stats.currentHp -= clickPower()
+									capturedCreature!!.first.stats.reduceHp(clickPower())
 									if (!deadTeam()) {
 										var randTeam = Random.nextInt(playerTeam.size)
-										while (playerTeam[randTeam].stats.currentHp <= 0)
+										while (playerTeam[randTeam].stats.currentHpState.intValue <= 0)
 											randTeam = Random.nextInt(playerTeam.size)
-										playerTeam[randTeam].stats.currentHp -= capturedCreature!!.first.stats.attack
+										playerTeam[randTeam].stats.reduceHp(
+											(capturedCreature!!.first.stats.attack * (85 .. 115).random() / 100f).toInt()
+										)
 										if (deadTeam()) PlayerDex.see(Dex.getSpeciesId(capturedCreature!!.first.baseData))
 									}
-									if (capturedCreature!!.first.stats.currentHp <= 0) {
+									if (capturedCreature!!.first.stats.currentHpState.intValue <= 0) {
 										PlayerDex.catch(Dex.getSpeciesId(capturedCreature!!.first.baseData))
 										showDialog = false
 										nearbyCreatures = nearbyCreatures.filter { it != capturedCreature }.toMutableList()
@@ -293,7 +295,7 @@ fun ExplorationMenu(
 										if (playerTeam.size < 6) addCreatureToTeam(capturedCreature!!.first)
 										else changeTeam = true
 									}
-									Log.d("StepCounterService", "${capturedCreature!!.first.stats.currentHp}")
+									Log.d("StepCounterService", "${capturedCreature!!.first.stats.currentHpState.intValue}")
 								}
 						)
 
@@ -309,7 +311,7 @@ fun ExplorationMenu(
 								var imageMod = Modifier
 									.fillMaxWidth()
 									.aspectRatio(1f)
-								if (it.stats.currentHp <= 0) imageMod = imageMod.background(color = Color.Red)
+								if (it.stats.currentHpState.intValue <= 0) imageMod = imageMod.background(color = Color.Red)
 								if (it != null) {
 									Column(modifier = Modifier.padding(4.dp)) {
 										Image(
@@ -318,7 +320,7 @@ fun ExplorationMenu(
 											modifier = imageMod
 										)
 										HealthBar(
-											currentHealth = it.stats.currentHp,
+											currentHealth = it.stats.currentHpState.intValue,
 											maxHealth = it.stats.maxHp,
 											modifier = Modifier.padding(4.dp)
 										)
@@ -363,7 +365,7 @@ fun ExplorationMenu(
 						items(playerTeam) {
 							TeamMember(
 								creature = it,
-								pv = it.stats.currentHp,
+								pv = it.stats.currentHpState.intValue,
 								maxPV = it.stats.maxHp,
 								modifier = Modifier
 									.padding(8.dp)
