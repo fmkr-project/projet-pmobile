@@ -111,121 +111,118 @@ fun CollectionMenu(
 )
 {
 	var isCardOpen: Boolean by remember { mutableStateOf(menuStatus.collectionPopupIsOpen) }
-
-	key(isCardOpen)
+	
+	Box(modifier = modifier)
 	{
-		Box(modifier = modifier)
+		LazyVerticalGrid(
+			columns = GridCells.Fixed(4),
+			modifier = modifier
+		)
 		{
-			LazyVerticalGrid(
-				columns = GridCells.Fixed(4),
-				modifier = modifier
-			)
-			{
-				items(Dex.species.entries.toList())
-				{ item ->
-					CollectionItem(
-						id = item.key,
-						species = item.value,
-						onClick = { isCardOpen = true },
-						menuStatus = menuStatus
-					)
-				}
-			}
-
-			Log.d("d", isCardOpen.toString())
-			// card
-			if (isCardOpen) {
-				AlertDialog(
-					onDismissRequest = {},
-					title =
-					{
-						Text(
-							text = menuStatus.collectionPopupSpecies.name.toUpperCase(Locale.current),
-							fontSize = 32.sp,
-							fontWeight = FontWeight.Bold
-						)
-					},
-					text =
-					{
-						Column(
-							modifier = Modifier
-								.fillMaxWidth()
-								.fillMaxHeight(0.5f)
-								.padding(20.dp),
-							horizontalAlignment = Alignment.CenterHorizontally,
-							verticalArrangement = Arrangement.Center
-						)
-						{
-							Image(
-								painter = painterResource(menuStatus.collectionPopupSpecies.menuSprite),
-								contentDescription = null,
-								modifier = Modifier
-									.size(96.dp)
-							)
-							Spacer(
-								modifier = Modifier
-									.size(15.dp)
-							)
-							Text(
-								text = "Rencontré : " + PlayerDex.getSeen(
-									Dex.getSpeciesId(
-										menuStatus.collectionPopupSpecies
-									)
-								),
-								fontStyle = FontStyle.Italic,
-								fontSize = 20.sp
-							)
-							Text(
-								text = "Capturé : " + PlayerDex.getCaught(
-									Dex.getSpeciesId(
-										menuStatus.collectionPopupSpecies
-									)
-								),
-								fontStyle = FontStyle.Italic,
-								fontSize = 20.sp
-							)
-							Spacer(
-								modifier = Modifier
-									.size(12.dp)
-							)
-							Text(
-								text = "PV " + menuStatus.collectionPopupSpecies.baseStats.maxHp
-										+ " ATK " + menuStatus.collectionPopupSpecies.baseStats.attack,
-								fontSize = 20.sp,
-								fontWeight = FontWeight.Bold
-							)
-							Spacer(
-								modifier = Modifier
-									.size(28.dp)
-							)
-							Text(
-								text = if (PlayerDex.isCaught(Dex.getSpeciesId(menuStatus.collectionPopupSpecies)))
-									Dex.descriptions[Dex.getSpeciesId(menuStatus.collectionPopupSpecies)]!!
-								else "??? ? ???? ? ????? ????????? ?? ??????",
-								fontSize = 18.sp,
-								textAlign = TextAlign.Center
-							)
-							Spacer(
-								modifier = Modifier
-									.size(8.dp)
-									.weight(1f)
-							)
-							OutlinedIconButton(
-								onClick = {
-									isCardOpen = false
-									menuStatus.collectionPopupIsOpen = false
-										  },
-								modifier = Modifier
-									.size(52.dp)
-							)
-							{
-								Icon(Icons.Default.Close, contentDescription = null)
-							}
-						}
-					},
-					confirmButton = {}
+			items(Dex.species.entries.toList())
+			{ item ->
+				CollectionItem(
+					id = item.key,
+					species = item.value,
+					onClick = { isCardOpen = true },
+					menuStatus = menuStatus
 				)
 			}
+		}
+
+		Log.d("d", isCardOpen.toString())
+		// card
+		if (isCardOpen) {
+			AlertDialog(
+				onDismissRequest = {},
+				title =
+				{
+					Text(
+						text = menuStatus.collectionPopupSpecies.name.toUpperCase(Locale.current),
+						fontSize = 32.sp,
+						fontWeight = FontWeight.Bold
+					)
+				},
+				text =
+				{
+					Column(
+						modifier = Modifier
+							.fillMaxWidth()
+							.fillMaxHeight(0.5f)
+							.padding(20.dp),
+						horizontalAlignment = Alignment.CenterHorizontally,
+						verticalArrangement = Arrangement.Center
+					)
+					{
+						Image(
+							painter = painterResource(menuStatus.collectionPopupSpecies.menuSprite),
+							contentDescription = null,
+							modifier = Modifier
+								.size(96.dp)
+						)
+						Spacer(
+							modifier = Modifier
+								.size(15.dp)
+						)
+						Text(
+							text = "Rencontré : " + PlayerDex.getSeen(
+								Dex.getSpeciesId(
+									menuStatus.collectionPopupSpecies
+								)
+							),
+							fontStyle = FontStyle.Italic,
+							fontSize = 20.sp
+						)
+						Text(
+							text = "Capturé : " + PlayerDex.getCaught(
+								Dex.getSpeciesId(
+									menuStatus.collectionPopupSpecies
+								)
+							),
+							fontStyle = FontStyle.Italic,
+							fontSize = 20.sp
+						)
+						Spacer(
+							modifier = Modifier
+								.size(12.dp)
+						)
+						Text(
+							text = "PV " + menuStatus.collectionPopupSpecies.baseStats.maxHp
+									+ " ATK " + menuStatus.collectionPopupSpecies.baseStats.attack,
+							fontSize = 20.sp,
+							fontWeight = FontWeight.Bold
+						)
+						Spacer(
+							modifier = Modifier
+								.size(28.dp)
+						)
+						Text(
+							text = if (PlayerDex.isCaught(Dex.getSpeciesId(menuStatus.collectionPopupSpecies)))
+								Dex.descriptions[Dex.getSpeciesId(menuStatus.collectionPopupSpecies)]!!
+							else "??? ? ???? ? ????? ????????? ?? ??????",
+							fontSize = 18.sp,
+							textAlign = TextAlign.Center
+						)
+						Spacer(
+							modifier = Modifier
+								.size(8.dp)
+								.weight(1f)
+						)
+						OutlinedIconButton(
+							onClick = {
+								isCardOpen = false
+								menuStatus.collectionPopupIsOpen = false
+									  },
+							modifier = Modifier
+								.size(52.dp)
+						)
+						{
+							Icon(Icons.Default.Close, contentDescription = null)
+						}
+					}
+				},
+				confirmButton = {}
+			)
 		}
 	}
 }

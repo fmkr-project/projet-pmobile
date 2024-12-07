@@ -129,8 +129,8 @@ fun MainBottomBar(
 			}
 
 			NavigationBarItem(
-				selected = false,
-				onClick = { /*TODO*/ },
+				selected = currentRoute == BottomItem.Player.route,
+				onClick = { navController.navigate(BottomItem.Player.route) },
 				icon = { Icon(
 					imageVector = Icons.Rounded.Face,
 					contentDescription = null

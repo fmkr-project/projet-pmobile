@@ -58,6 +58,12 @@ fun AppScreen(
 					distanceTracker = distanceTracker
 				)
 			}
+			composable(BottomItem.Player.route)
+			{
+				PlayerMenu(
+					modifier = Modifier.padding(innerPadding)
+				)
+			}
 			composable(BottomItem.Settings.route) {
 				ParametresMenu(
 					modifier = Modifier.padding(innerPadding),
