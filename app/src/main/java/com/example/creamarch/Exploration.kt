@@ -27,8 +27,10 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.example.creamarch.ui.theme.Pink80
 import com.example.creamarch.ui.theme.Purple80
 import com.example.creamarch.ui.theme.PurpleGrey80
@@ -39,7 +41,7 @@ import kotlin.random.Random
 // Variables pour la génération des créatures
 var prevFab = 0
 var fab = 1
-
+var initialSubListSize=0
 fun distance(): Int {
 	val f3 = prevFab + fab
 	prevFab = fab
@@ -58,6 +60,9 @@ fun generateNewCreatureList(): MutableList<Pair<Creature, Int>> {
 	}.toMutableList()
 
 	val indexLegend = newCreatureList.indexOfFirst { it.second >= legendary.second }
+
+	initialSubListSize = if (indexLegend != -1) indexLegend + 1 else newCreatureList.size
+
 
 	if (indexLegend != -1 && newCreatureList[indexLegend] != legendary) {
 		newCreatureList.add(indexLegend, legendary)
@@ -155,7 +160,7 @@ fun HealthBar(currentHealth: Int, maxHealth: Int, modifier: Modifier = Modifier)
 	}
 }
 
-// Ajout dans votre service ou activité principale pour initialiser la liste des créatures
+
 fun initializeCreatures() {
 	val initialList = generateNewCreatureList()
 	CreatureRepository.updateCreatureList(initialList)
@@ -170,25 +175,43 @@ fun ExplorationMenu(
 	val dist by StepCounterService.distanceWalked.collectAsState(initial = 0.0)
 	val walkedDistance = if (debug) 2000 else dist.toInt()
 
-	// Observer la liste des créatures
-	val creatureList by CreatureRepository.creatureList.collectAsState()
+	var lastHealedDistance by remember { mutableStateOf(0) }
 
-	// Liste visible des créatures
-	val nCreatures = remember(creatureList) {
-		creatureList.filter { it.second <= walkedDistance }
+
+	if (walkedDistance >= lastHealedDistance + 100) {
+		val healingAmount = 10
+
+
+		playerTeam.forEach { creature ->
+			val newHp = (creature.stats.currentHp + healingAmount).coerceAtMost(creature.stats.maxHp)
+			creature.stats.currentHp = newHp
+		}
+		lastHealedDistance = (walkedDistance / 100) * 100
 	}
 
-	// Calculer l'index et la distance jusqu'à la prochaine créature
-	val nextIndex = creatureList.indexOfFirst { it.second > walkedDistance }
-	val tillNext = if (nextIndex != -1) creatureList[nextIndex].second - walkedDistance else 0
-
+	var nearbyCreatures by remember { mutableStateOf(CreatureRepository.creatureList.value) }
+	var nCreatures by remember {
+		mutableStateOf(nearbyCreatures.take(initialSubListSize).toList())
+	}
 	var showDialog by remember { mutableStateOf(false) }
 	var capturedCreature by remember { mutableStateOf<Pair<Creature, Int>?>(null) }
+	var changeTeam by remember { mutableStateOf(false) }
+	var youSurOfChange by remember { mutableStateOf(false) }
+	var whichChange by remember { mutableIntStateOf(0) }
 
 	fun captureCreature(creature: Pair<Creature, Int>) {
 		capturedCreature = creature
-		showDialog = true
+		showDialog = true // Ouvrir la popup de combat
 	}
+
+	fun addCreatureToTeam(creature: Creature, index: Int = -1) {
+		if (index == -1) playerTeam.add(creature)
+		else playerTeam[index] = creature
+	}
+
+	// Calculer l'index et la distance jusqu'à la prochaine créature
+	val nextIndex = nearbyCreatures.indexOfFirst { it.second > walkedDistance }
+	val tillNext = if (nextIndex != -1) nearbyCreatures[nextIndex].second - walkedDistance else 0
 
 	Column(modifier = modifier.padding(16.dp)) {
 		// Afficher la distance parcourue
@@ -232,32 +255,171 @@ fun ExplorationMenu(
 			}
 		}
 
-		// Afficher la boîte de dialogue si une créature est capturée
-		if (showDialog && capturedCreature != null) {
+		// Code de la pop-up de combat
+		if (showDialog && capturedCreature != null && !deadTeam()) {
+			if (deadTeam()) showDialog = false
 			AlertDialog(
-				onDismissRequest = { showDialog = false },
-				title = {
-					Text(
-						text = "Félicitations!",
-						fontSize = 24.sp,
-						textAlign = TextAlign.Center
-					)
-				},
+				onDismissRequest = { /* Bloquer la fermeture extérieure */ },
+				title = { Text("Combat!", fontSize = 30.sp, textAlign = TextAlign.Center) },
 				text = {
-					Text(
-						text = "Vous avez capturé ${capturedCreature!!.first.baseData.name}!",
-						fontSize = 18.sp,
-						textAlign = TextAlign.Center
-					)
+					Column(
+						verticalArrangement = Arrangement.SpaceEvenly,
+						modifier = Modifier.fillMaxHeight()
+					) {
+						HealthBar(
+							currentHealth = capturedCreature!!.first.stats.currentHp,
+							maxHealth = capturedCreature!!.first.stats.maxHp
+						)
+						Image(
+							painter = painterResource(id = capturedCreature!!.first.baseData.menuSprite),
+							contentDescription = "Créature à battre",
+							modifier = Modifier
+								.fillMaxWidth()
+								.aspectRatio(1.5f)
+								.clickable {
+									capturedCreature!!.first.stats.currentHp -= clickPower()
+									if (!deadTeam()) {
+										var randTeam = Random.nextInt(playerTeam.size)
+										while (playerTeam[randTeam].stats.currentHp <= 0)
+											randTeam = Random.nextInt(playerTeam.size)
+										playerTeam[randTeam].stats.currentHp -= capturedCreature!!.first.stats.attack
+										if (deadTeam()) PlayerDex.see(Dex.getSpeciesId(capturedCreature!!.first.baseData))
+									}
+									if (capturedCreature!!.first.stats.currentHp <= 0) {
+										PlayerDex.catch(Dex.getSpeciesId(capturedCreature!!.first.baseData))
+										showDialog = false
+										nearbyCreatures = nearbyCreatures.filter { it != capturedCreature }.toMutableList()
+										nCreatures = nearbyCreatures.take(initialSubListSize)
+										if (playerTeam.size < 6) addCreatureToTeam(capturedCreature!!.first)
+										else changeTeam = true
+									}
+									Log.d("StepCounterService", "${capturedCreature!!.first.stats.currentHp}")
+								}
+						)
+
+						LazyVerticalGrid(
+							columns = GridCells.Fixed(3),
+							modifier = Modifier
+								.fillMaxWidth()
+								.weight(1f),
+							verticalArrangement = Arrangement.SpaceEvenly,
+							horizontalArrangement = Arrangement.SpaceEvenly
+						) {
+							items(playerTeam) {
+								var imageMod = Modifier
+									.fillMaxWidth()
+									.aspectRatio(1f)
+								if (it.stats.currentHp <= 0) imageMod = imageMod.background(color = Color.Red)
+								if (it != null) {
+									Column(modifier = Modifier.padding(4.dp)) {
+										Image(
+											painter = painterResource(id = it.baseData.menuSprite),
+											contentDescription = "My creatures",
+											modifier = imageMod
+										)
+										HealthBar(
+											currentHealth = it.stats.currentHp,
+											maxHealth = it.stats.maxHp,
+											modifier = Modifier.padding(4.dp)
+										)
+									}
+								}
+							}
+						}
+					}
 				},
 				confirmButton = {
-					Button(onClick = { showDialog = false }) {
-						Text(text = "OK")
+					Button(onClick = {
+						PlayerDex.see(Dex.getSpeciesId(capturedCreature!!.first.baseData))
+						showDialog = false
+					}) {
+						Text("Fuite", fontSize = 30.sp, textAlign = TextAlign.Center)
 					}
 				}
 			)
 		}
+
+		// Code pour choisir la créature à garder
+		if (changeTeam) {
+			AlertDialog(
+				modifier = Modifier.fillMaxSize(),
+				onDismissRequest = { /* Bloquer la fermeture extérieure */ },
+				title = {
+					Text(
+						text = buildAnnotatedString {
+							append("Quelle créature voulez-vous remplacer par ")
+							withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+								append(capturedCreature!!.first.baseData.name)
+								append(" niv ")
+								append(capturedCreature!!.first.level.toString())
+							}
+							append("?")
+						},
+						fontSize = 18.sp
+					)
+				},
+				text = {
+					LazyColumn {
+						items(playerTeam) {
+							TeamMember(
+								creature = it,
+								pv = it.stats.currentHp,
+								maxPV = it.stats.maxHp,
+								modifier = Modifier
+									.padding(8.dp)
+									.clickable {
+										youSurOfChange = true
+										whichChange = playerTeam.indexOf(it)
+									}
+							)
+						}
+					}
+				},
+				confirmButton = {
+					Button(onClick = { changeTeam = false }) {
+						Text(text = "Aucune")
+					}
+				}
+			)
+		}
+
+		// Popup pour s'assurer du changement de créature
+		if (youSurOfChange) {
+			Dialog(onDismissRequest = { /* Bloquer la fermeture extérieure */ }) {
+				Column(
+					modifier = Modifier
+						.fillMaxHeight(0.4f)
+						.fillMaxWidth()
+						.background(Color.White),
+					verticalArrangement = Arrangement.SpaceEvenly
+				) {
+					Text(
+						text = "Etes-vous sûr de votre choix?",
+						fontSize = 52.sp,
+						lineHeight = 52.sp
+					)
+					Row(
+						modifier = Modifier.fillMaxWidth(),
+						horizontalArrangement = Arrangement.SpaceEvenly
+					) {
+						Button(onClick = {
+							addCreatureToTeam(capturedCreature!!.first, whichChange)
+							changeTeam = false
+							youSurOfChange = false
+						}) {
+							Text(text = "Oui", fontSize = 30.sp)
+						}
+
+						Button(onClick = {
+							youSurOfChange = false
+							changeTeam = true
+						}) {
+							Text(text = "Non", fontSize = 30.sp)
+						}
+					}
+				}
+			}
+		}
 	}
 }
-
 
