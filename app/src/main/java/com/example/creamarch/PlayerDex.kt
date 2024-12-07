@@ -66,8 +66,8 @@ object PlayerDex
 
 	fun getTotalCaught(): Int
 	{
-		if (seen.isEmpty()) return 0
-		return seen.values.reduce { sum, el -> sum + el }
+		if (caught.isEmpty()) return 0
+		return caught.values.reduce { sum, el -> sum + el }
 	}
 
 	fun getSpeciesCaught(): Int

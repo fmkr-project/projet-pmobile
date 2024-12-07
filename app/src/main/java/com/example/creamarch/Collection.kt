@@ -111,7 +111,7 @@ fun CollectionMenu(
 )
 {
 	var isCardOpen: Boolean by remember { mutableStateOf(menuStatus.collectionPopupIsOpen) }
-	
+
 	Box(modifier = modifier)
 	{
 		LazyVerticalGrid(

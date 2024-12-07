@@ -50,11 +50,15 @@ fun loadPlayerTeam(context: Context): MutableList<Creature> {
 	val sharedPreferences = context.getSharedPreferences("game_data", Context.MODE_PRIVATE)
 	val json = sharedPreferences.getString("player_team", null)
 
-	return if (json != null) {
+	if (json != null)
+	{
 		val type = object : TypeToken<MutableList<Creature>>() {}.type
-		Gson().fromJson(json, type) // Désérialiser la liste
-	} else {
-		(1..1).map { Dex.species[1]!!.spawnNewCreature(10) }.toMutableList()
+		return Gson().fromJson(json, type) // Désérialiser la liste
+	}
+	else
+	{
+		PlayerDex.catch(1)
+		return (1..1).map { Dex.species[1]!!.spawnNewCreature(10) }.toMutableList()
 	}
 }
 
