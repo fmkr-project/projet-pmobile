@@ -133,15 +133,18 @@ class MainActivity : ComponentActivity() {
 	override fun onStart() {
 		super.onStart()
 		initializePlayerTeam(this)
+		PlayerDex.loadPlayerDex(this)
 	}
 	override fun onStop() {
 		super.onStop()
 		savePlayerTeamState(this)
+		PlayerDex.savePlayerDex(this)
 	}
 
 	override fun onDestroy() {
 		super.onDestroy()
 		savePlayerTeamState(this)
+		PlayerDex.savePlayerDex(this)
 		val intent = Intent(this, StepCounterService::class.java)
 		stopService(intent)
 	}

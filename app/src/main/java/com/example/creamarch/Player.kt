@@ -36,6 +36,19 @@ fun PlayerMenu(
 		)
 		Spacer(Modifier.size(16.dp))
 		Text(
+			text = "Total créatures rencontrées :",
+			modifier = Modifier.align(Alignment.CenterHorizontally),
+			fontStyle = FontStyle.Italic,
+			fontSize = 24.sp
+		)
+		Spacer(Modifier.size(8.dp))
+		Text(
+			text = PlayerDex.getTotalSeen().toString(),
+			modifier = Modifier.align(Alignment.CenterHorizontally),
+			fontSize = 48.sp
+		)
+		Spacer(Modifier.size(16.dp))
+		Text(
 			text = "Total créatures capturées :",
 			modifier = Modifier.align(Alignment.CenterHorizontally),
 			fontStyle = FontStyle.Italic,
