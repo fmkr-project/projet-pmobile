@@ -1,6 +1,7 @@
 package com.example.creamarch
 
 import DistanceTracker
+import LocationService
 import android.Manifest
 import android.app.AlertDialog
 import android.content.Intent
