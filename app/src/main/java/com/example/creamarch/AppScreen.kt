@@ -13,74 +13,72 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 
+// Main composable function for the app screen
 @Composable
 fun AppScreen(
-	navController: NavHostController = rememberNavController(),
-	distanceTracker : DistanceTracker,
-	menuStatus: MenuStatus
+	navController: NavHostController = rememberNavController(),  // Navigation controller
+	distanceTracker: DistanceTracker,  // Distance tracking
+	menuStatus: MenuStatus  // Current menu status of the app
 )
 {
+	// Scaffold helps structure the interface with a top bar, bottom bar, and main content
 	Scaffold(
 		topBar = {
-			MainTopBar()
+			MainTopBar()  // Top bar of the app
 		},
 		bottomBar = {
-			MainBottomBar(navController = navController)
+			MainBottomBar(navController = navController)  // Bottom bar with navigation
 		},
 		modifier = Modifier
-			.fillMaxSize()
+			.fillMaxSize()  // Fill the available space
 	)
 	{ innerPadding ->
+		// NavHost handles navigation between different destinations
 		NavHost(
 			navController = navController,
-			startDestination = BottomItem.Exploration.route
+			startDestination = BottomItem.Exploration.route  // Initial destination
 		)
 		{
+			// Define the different navigation destinations
 			composable(BottomItem.Team.route)
 			{
-				TeamMenu(
+				TeamMenu(  // Team menu
 					modifier = Modifier.padding(innerPadding)
 				)
 			}
 
 			composable(BottomItem.Collection.route)
 			{
-				CollectionMenu(
+				CollectionMenu(  // Collection menu
 					modifier = Modifier.padding(innerPadding),
-					menuStatus = menuStatus,
-					playerDex = PlayerDex
+					menuStatus = menuStatus,  // Menu status
+					playerDex = PlayerDex  // Player data
 				)
 			}
 			composable(BottomItem.Exploration.route)
 			{
-				ExplorationMenu(
+				ExplorationMenu(  // Exploration menu
 					modifier = Modifier.padding(innerPadding),
-					distanceTracker = distanceTracker
+					distanceTracker = distanceTracker  // Distance tracking
 				)
 			}
 			composable(BottomItem.Player.route)
 			{
-				PlayerMenu(
+				PlayerMenu(  // Player menu
 					modifier = Modifier.padding(innerPadding)
 				)
 			}
 			composable(BottomItem.Settings.route) {
-				ParametresMenu(
+				ParametresMenu(  // Settings menu
 					modifier = Modifier.padding(innerPadding),
-					onMusicToggle = { isEnabled ->
-						// Gérer l'état de la musique ici
-						println("Musique activée : $isEnabled")
-						// Vous pouvez ajouter une sauvegarde dans SharedPreferences ou DataStore
+					onMusicToggle = { isEnabled ->  // Handle music state
+						println("Music enabled: $isEnabled")
 					},
-					onVibrationToggle = { isEnabled ->
-						// Gérer l'état des vibrations ici
-						println("Vibrations activées : $isEnabled")
-						// Vous pouvez également sauvegarder cet état
+					onVibrationToggle = { isEnabled ->  // Handle vibration state
+						println("Vibration enabled: $isEnabled")
 					}
 				)
 			}
 		}
 	}
 }
-
-

@@ -24,8 +24,9 @@ fun ParametresMenu(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start
     ) {
+        // Title of the settings menu
         Text(
-            text = "Paramètres",
+            text = "Settings",
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 24.dp)
         )
@@ -36,20 +37,20 @@ fun ParametresMenu(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Activer la musique",
+                text = "Enable Music",  // Label for the music toggle
                 modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.bodyLarge
             )
             Switch(
-                checked = musicEnabled,
+                checked = musicEnabled,  // Whether the music toggle is on or off
                 onCheckedChange = {
                     musicEnabled = it
-                    onMusicToggle(it) // Notify the parent
+                    onMusicToggle(it) // Notify the parent about the change
                 }
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))  // Add space between toggles
 
         // Toggle for vibrations
         Row(
@@ -57,17 +58,18 @@ fun ParametresMenu(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Activer les vibrations",
+                text = "Enable Vibration",  // Label for the vibration toggle
                 modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.bodyLarge
             )
             Switch(
-                checked = vibrationEnabled,
+                checked = vibrationEnabled,  // Whether the vibration toggle is on or off
                 onCheckedChange = {
                     vibrationEnabled = it
-                    onVibrationToggle(it) // Notify the parent
+                    onVibrationToggle(it) // Notify the parent about the change
                 }
             )
         }
     }
 }
+

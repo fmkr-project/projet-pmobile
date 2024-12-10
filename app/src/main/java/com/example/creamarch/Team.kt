@@ -25,73 +25,83 @@ import com.example.creamarch.ui.theme.CreamarchTheme
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken
 import kotlin.math.roundToInt
 
+// List of creatures in the player's team
 var playerTeam: MutableList<Creature> = mutableListOf()
 
+// Function to initialize the player's team from saved data or defaults
 fun initializePlayerTeam(context: Context) {
-	playerTeam = loadPlayerTeam(context)
-	playerTeam.map { it.stats.initializeCurrentHpState() }
+	playerTeam = loadPlayerTeam(context)  // Load the player's team
+	playerTeam.map { it.stats.initializeCurrentHpState() }  // Initialize health states
 }
 
-// Appeler cette fonction pour sauvegarder l'état avant de quitter l'application
+// Call this function to save the player's team state before exiting the app
 fun savePlayerTeamState(context: Context) {
-	savePlayerTeam(context)
+	savePlayerTeam(context)  // Save the team data
 }
 
+// Function to save the player's team to SharedPreferences
 fun savePlayerTeam(context: Context) {
-	playerTeam.map { it.stats.copy(currentHp = it.stats.currentHpState.intValue) }
+	playerTeam.map { it.stats.copy(currentHp = it.stats.currentHpState.intValue) }  // Save current HP
 	val sharedPreferences = context.getSharedPreferences("game_data", Context.MODE_PRIVATE)
 	val editor = sharedPreferences.edit()
 
 	val gson = Gson()
-	val json = gson.toJson(playerTeam) // Sérialiser la liste en JSON
+	val json = gson.toJson(playerTeam)  // Serialize the player team list to JSON
 	editor.putString("player_team", json)
-	editor.apply()
+	editor.apply()  // Apply changes to SharedPreferences
 }
 
+// Function to load the player's team from SharedPreferences
 fun loadPlayerTeam(context: Context): MutableList<Creature> {
 	val sharedPreferences = context.getSharedPreferences("game_data", Context.MODE_PRIVATE)
 	val json = sharedPreferences.getString("player_team", null)
 
 	if (json != null) {
 		val type = object : TypeToken<MutableList<Creature>>() {}.type
-		val creatures = Gson().fromJson<MutableList<Creature>>(json, type) // Désérialiser la liste
-		creatures.forEach { it.stats.initializeCurrentHpState() }
+		val creatures = Gson().fromJson<MutableList<Creature>>(json, type)  // Deserialize the JSON to a list of creatures
+		creatures.forEach { it.stats.initializeCurrentHpState() }  // Initialize health states
 		return creatures
 	} else {
+		// If no saved data is found, return a default creature
 		return (1..1).map { Dex.species[1]!!.spawnNewCreature(10) }.toMutableList()
 	}
 }
 
+// Function to check if all creatures in the team are dead (HP <= 0)
 fun deadTeam(): Boolean{
 	val i = playerTeam.fold(true)
-	{ acc, creature -> acc && (creature.stats.currentHpState.intValue <= 0) }
+	{ acc, creature -> acc && (creature.stats.currentHpState.intValue <= 0) }  // Check if all creatures are dead
 	return i
 }
 
+// Function to calculate the attack power based on the team's health and stats
 fun clickPower(): Int{
 	return (playerTeam.fold(0) { acc, creature ->
 		if (creature.stats.currentHpState.intValue > 0) creature.stats.attack + acc
 		else acc
-	} * (85 .. 115).random() / 100f).toInt()
+	} * (85 .. 115).random() / 100f).toInt()  // Calculate attack with random variation
 }
 
+// Function to add a creature to the player's team
 fun addCreatureToTeam(creature: Creature) {
-	// Si la taille de playerTeam est 6, on supprime la derniere créature
+	// If the team size exceeds 6, remove the last creature
 	if (playerTeam.size >= 6) {
-		playerTeam.removeAt(5)  // Retire le dernier élément (indice 5)
+		playerTeam.removeAt(5)  // Remove the last element (index 5)
 	}
-	creature.stats.currentHpState.intValue = creature.stats.maxHp
+	creature.stats.currentHpState.intValue = creature.stats.maxHp  // Reset the creature's HP
 
-	// Ajoute la créature en première position
-	playerTeam.add(0, creature)  // Insere la créature à l'index 0 (en debut de liste)
+	// Add the creature to the front of the team list
+	playerTeam.add(0, creature)  // Insert the creature at index 0 (beginning of the list)
 }
 
+// Function to add a creature to the player's team at a specific index
 fun addCreatureToTeam(creature: Creature, index: Int){
-	playerTeam.removeAt(index)
-	creature.stats.currentHpState.intValue = creature.stats.maxHp
-	playerTeam.add(index, creature)
+	playerTeam.removeAt(index)  // Remove the creature at the specified index
+	creature.stats.currentHpState.intValue = creature.stats.maxHp  // Reset the creature's HP
+	playerTeam.add(index, creature)  // Add the creature back at the specified index
 }
 
+// Composable function to display a team member (creature) with its stats
 @Composable
 fun TeamMember(
 	creature: Creature,
@@ -106,66 +116,65 @@ fun TeamMember(
 	)
 	{
 		Row(modifier = Modifier
-			.fillMaxWidth()
-			.padding(10.dp)
+			.fillMaxWidth()  // Make the row fill the available width
+			.padding(10.dp)  // Add padding inside the row
 		)
 		{
 			Image(
-			painter = painterResource(creature.baseData.menuSprite),
-			contentDescription = creature.baseData.name,
-			modifier = modifier
-				.fillMaxHeight()
-				.size(36.dp)
+				painter = painterResource(creature.baseData.menuSprite),  // Display the creature's sprite
+				contentDescription = creature.baseData.name,  // Use the creature's name as the description
+				modifier = modifier
+					.fillMaxHeight()  // Make the image fill the available height
+					.size(36.dp)  // Set the size of the image
 			)
 
 			Column(
-				modifier = modifier.weight(1f)
+				modifier = modifier.weight(1f)  // Make the column take up available space
 			) {
 				Text(
-					text = creature.baseData.name,
-					fontWeight = FontWeight.Bold,
-					fontSize = 28.sp
-
+					text = creature.baseData.name,  // Display the creature's name
+					fontWeight = FontWeight.Bold,  // Make the name bold
+					fontSize = 28.sp  // Set the font size
 				)
 				Text(
-					text = "niv. " + creature.level.toString()
-
+					text = "lvl. " + creature.level.toString()  // Display the creature's level
 				)
 			}
 			Text(
-				text = "$pv / $maxPV",
+				text = "$pv / $maxPV",  // Display current HP / max HP
 				modifier = modifier
-					.wrapContentHeight()
+					.wrapContentHeight()  // Make the text wrap its content vertically
 			)
 		}
 	}
 }
 
+// Composable function to display the player's team
 @Composable
 fun TeamMenu(modifier: Modifier = Modifier)
 {
 	// Get the player's team.
-	// TODO temp
-	// TODO ensure there are no more than 6 creatures in the team
+	// TODO: Ensure there are no more than 6 creatures in the team
 	for (creature in playerTeam) {
 		LazyColumn(modifier = modifier) {
 			items(playerTeam) {
 				TeamMember(
 					creature = it,
-					pv = it.stats.currentHpState.intValue.coerceAtLeast(0),
-					maxPV = it.stats.maxHp,
-					modifier = Modifier.padding(10.dp)
+					pv = it.stats.currentHpState.intValue.coerceAtLeast(0),  // Ensure HP is at least 0
+					maxPV = it.stats.maxHp,  // Pass the maximum HP
+					modifier = Modifier.padding(10.dp)  // Add padding around each team member
 				)
 			}
 		}
 	}
 }
 
+// Preview of the TeamMenu composable for development purposes
 @Composable
 @Preview(showBackground = true)
 fun TeamPreview()
 {
 	CreamarchTheme {
-		TeamMenu()
+		TeamMenu()  // Display the TeamMenu composable within the theme
 	}
 }

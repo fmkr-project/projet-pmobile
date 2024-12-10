@@ -20,23 +20,25 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
+// Service to track steps, calculate distance, and reset daily distance at midnight
 class StepCounterService : Service(), SensorEventListener {
 
     private lateinit var sensorManager: SensorManager
     private var stepSensor: Sensor? = null
     private var stepCount: Int = 0
-    private val stepLength = 0.78 // Longueur moyenne d'un pas en mètres
+    private val stepLength = 0.78 // Average step length in meters
     private val serviceScope = CoroutineScope(Dispatchers.Default + Job())
     private var lastStepCount = 0
 
     companion object {
-        val distanceWalked = MutableStateFlow(0.0) // Distance totale en mètres
+        val distanceWalked = MutableStateFlow(0.0) // Total distance in meters
     }
 
     private var totalDistance: Double = 0.0
     private var dailyDistance: Double = 0.0
     private lateinit var sharedPreferences: SharedPreferences
 
+    // Called when the service is created
     override fun onCreate() {
         super.onCreate()
         sharedPreferences = getSharedPreferences("StepCounterPrefs", MODE_PRIVATE)
@@ -49,24 +51,25 @@ class StepCounterService : Service(), SensorEventListener {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
         }
 
-        // Planifier une réinitialisation quotidienne
+        // Schedule a daily reset for the distance counters
         scheduleDailyReset()
 
+        // Coroutine to log the distance every 2 seconds
         serviceScope.launch {
             while (true) {
-                Log.d("StepCounterService", "Distance aujourd'hui : $dailyDistance m, Total : $totalDistance m")
-                delay(2000L) // Log toutes les 2 secondes
+                //Log.d("StepCounterService", "Today's Distance: $dailyDistance m, Total: $totalDistance m")
+                delay(2000L) // Log every 2 seconds
             }
         }
     }
 
+    // Called when the service is destroyed
     override fun onDestroy() {
         super.onDestroy()
-        sensorManager.unregisterListener(this)
-        serviceScope.cancel()
+        sensorManager.unregisterListener(this)  // Unregister the sensor listener
+        serviceScope.cancel()  // Cancel the coroutine
 
-
-        // Sauvegarder les distances dans SharedPreferences
+        // Save the total and daily distances to SharedPreferences
         sharedPreferences.edit().apply {
             putFloat("totalDistance", totalDistance.toFloat())
             putFloat("dailyDistance", dailyDistance.toFloat())
@@ -74,44 +77,50 @@ class StepCounterService : Service(), SensorEventListener {
         }
     }
 
+    // Method to handle binding the service (not used here)
     override fun onBind(intent: Intent?): IBinder? = null
 
+    // Method to handle sensor data when steps are detected
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_STEP_DETECTOR) {
-            val stepDistance = stepLength
-            dailyDistance += stepDistance
-            totalDistance += stepDistance
-            distanceWalked.value = dailyDistance
+            val stepDistance = stepLength  // Calculate the distance per step
+            dailyDistance += stepDistance  // Add to the daily distance
+            totalDistance += stepDistance  // Add to the total distance
+            distanceWalked.value = dailyDistance  // Update the total walked distance
         }
     }
 
+    // Method to handle sensor accuracy changes (not used here)
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
+    // Method to schedule a daily reset of the distances at midnight
     private fun scheduleDailyReset() {
-        val resetIntent = Intent(this, ResetReceiver::class.java)
+        val resetIntent = Intent(this, ResetReceiver::class.java)  // Intent to trigger the reset
         val pendingIntent = PendingIntent.getBroadcast(
             this, 0, resetIntent, PendingIntent.FLAG_IMMUTABLE
         )
 
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
-        val triggerTime = getNextMidnightMillis()
+        val triggerTime = getNextMidnightMillis()  // Get the time for the next midnight
         alarmManager.setRepeating(
             AlarmManager.RTC_WAKEUP,
-            triggerTime,
-            AlarmManager.INTERVAL_DAY,
-            pendingIntent
+            triggerTime,  // Trigger at midnight
+            AlarmManager.INTERVAL_DAY,  // Repeat daily
+            pendingIntent  // PendingIntent to trigger the reset
         )
     }
+
+    // Helper method to get the time in milliseconds for the next midnight
     private fun getNextMidnightMillis(): Long {
         val now = System.currentTimeMillis()
         val calendar = Calendar.getInstance().apply {
             timeInMillis = now
-            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.HOUR_OF_DAY, 0)  // Set time to midnight
             set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
-            add(Calendar.DAY_OF_YEAR, 1)
+            add(Calendar.DAY_OF_YEAR, 1)  // Move to the next day
         }
-        return calendar.timeInMillis
+        return calendar.timeInMillis  // Return the time in milliseconds
     }
 }

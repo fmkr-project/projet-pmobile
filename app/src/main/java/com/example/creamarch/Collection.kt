@@ -43,24 +43,29 @@ import androidx.compose.ui.unit.sp
 import kotlin.random.Random
 
 
+// Composable function to display a collection item (a creature)
 @Composable
 fun CollectionItem(
-	id: Int,
-	species: CreatureSpecies,
-	menuStatus: MenuStatus,
-	onClick: () -> Unit,
-	modifier: Modifier = Modifier
+	id: Int,  // The creature's ID
+	species: CreatureSpecies,  // Specific details of the creature (its sprite, stats, etc.)
+	menuStatus: MenuStatus,  // Current status of the menu
+	onClick: () -> Unit,  // Action to perform when an item is clicked
+	modifier: Modifier = Modifier  // Layout modifier
 )
 {
+	// Check if the creature has been seen or caught
 	val isSeen = PlayerDex.isSeen(id)
 	val isCaught = PlayerDex.isCaught(id)
 
+	// Choose the image based on the creature's state (seen or not)
 	val painter: Painter = if (isSeen) painterResource(species.menuSprite)
 	else painterResource(R.drawable.what)
 
+	// Card displaying the creature, including its image and ID
 	Card(
 		onClick =
 		{
+			// If the creature has been seen, open the collection popup
 			if (isSeen)
 			{
 				onClick()
@@ -69,25 +74,29 @@ fun CollectionItem(
 			}
 		},
 		modifier = modifier
-			.padding(5.dp)
+			.padding(5.dp)  // Padding around the card
 	)
 	{
+		// Column containing the image and the creature's ID
 		Column(
 			modifier = modifier
 				.fillMaxWidth(),
 			horizontalAlignment = Alignment.CenterHorizontally)
 		{
+			// Image representing the creature
 			Image(
 				painter = painter,
 				contentDescription = null,
 				modifier = modifier
-					.size(60.dp)
+					.size(60.dp)  // Size of the image
 			)
+			// Row containing the creature's ID and catch status
 			Row(
 				modifier = modifier,
 				verticalAlignment = Alignment.CenterVertically
 			)
 			{
+				// If caught, display the "caught" icon
 				if (isCaught)
 				{
 					Image(
@@ -97,46 +106,51 @@ fun CollectionItem(
 							.size(16.dp)
 					)
 				}
+				// Display the formatted ID of the creature
 				Text(text = "#" + id.toString().padStart(3, '0'))
 			}
 		}
 	}
 }
 
+// Composable function to display the collection menu
 @Composable
 fun CollectionMenu(
-	modifier: Modifier = Modifier,
-	menuStatus: MenuStatus,
-	playerDex: PlayerDex
+	modifier: Modifier = Modifier,  // Layout modifier
+	menuStatus: MenuStatus,  // Current status of the menu
+	playerDex: PlayerDex  // Player data, containing information about the collection
 )
 {
+	// Variable to control the opening/closing of the popup
 	var isCardOpen: Boolean by remember { mutableStateOf(menuStatus.collectionPopupIsOpen) }
 
 	Box(modifier = modifier)
 	{
+		// Grid to display all collection items
 		LazyVerticalGrid(
-			columns = GridCells.Fixed(4),
+			columns = GridCells.Fixed(4),  // Displaying in 4 columns
 			modifier = modifier
 		)
 		{
+			// Iterate through the species in the Dex and create an item for each creature
 			items(Dex.species.entries.toList())
 			{ item ->
 				CollectionItem(
 					id = item.key,
 					species = item.value,
-					onClick = { isCardOpen = true },
+					onClick = { isCardOpen = true },  // Open the popup on click
 					menuStatus = menuStatus
 				)
 			}
 		}
 
-		Log.d("d", isCardOpen.toString())
-		// card
+		// Display the popup when isCardOpen is true
 		if (isCardOpen) {
 			AlertDialog(
-				onDismissRequest = {},
+				onDismissRequest = {},  // Do nothing when the popup is dismissed
 				title =
 				{
+					// Title of the popup with the creature's name
 					Text(
 						text = menuStatus.collectionPopupSpecies.name.toUpperCase(Locale.current),
 						fontSize = 32.sp,
@@ -145,6 +159,7 @@ fun CollectionMenu(
 				},
 				text =
 				{
+					// Content of the popup with image, stats, and description
 					Column(
 						modifier = Modifier
 							.fillMaxWidth()
@@ -154,6 +169,7 @@ fun CollectionMenu(
 						verticalArrangement = Arrangement.Center
 					)
 					{
+						// Image of the creature
 						Image(
 							painter = painterResource(menuStatus.collectionPopupSpecies.menuSprite),
 							contentDescription = null,
@@ -164,8 +180,9 @@ fun CollectionMenu(
 							modifier = Modifier
 								.size(15.dp)
 						)
+						// Creature stats
 						Text(
-							text = "Rencontré : " + PlayerDex.getSeen(
+							text = "Seen: " + PlayerDex.getSeen(
 								Dex.getSpeciesId(
 									menuStatus.collectionPopupSpecies
 								)
@@ -174,7 +191,7 @@ fun CollectionMenu(
 							fontSize = 20.sp
 						)
 						Text(
-							text = "Capturé : " + PlayerDex.getCaught(
+							text = "Caught: " + PlayerDex.getCaught(
 								Dex.getSpeciesId(
 									menuStatus.collectionPopupSpecies
 								)
@@ -186,8 +203,9 @@ fun CollectionMenu(
 							modifier = Modifier
 								.size(12.dp)
 						)
+						// Display combat stats of the creature
 						Text(
-							text = "PV " + menuStatus.collectionPopupSpecies.baseStats.maxHp
+							text = "HP " + menuStatus.collectionPopupSpecies.baseStats.maxHp
 									+ " ATK " + menuStatus.collectionPopupSpecies.baseStats.attack,
 							fontSize = 20.sp,
 							fontWeight = FontWeight.Bold
@@ -196,10 +214,11 @@ fun CollectionMenu(
 							modifier = Modifier
 								.size(28.dp)
 						)
+						// Creature description or default text if not caught
 						Text(
 							text = if (PlayerDex.isCaught(Dex.getSpeciesId(menuStatus.collectionPopupSpecies)))
 								Dex.descriptions[Dex.getSpeciesId(menuStatus.collectionPopupSpecies)]!!
-							else "??? ? ???? ? ????? ????????? ?? ??????",
+							else "??? ? ???? ? ?????? ????????? ?? ??????",
 							fontSize = 18.sp,
 							textAlign = TextAlign.Center
 						)
@@ -208,11 +227,12 @@ fun CollectionMenu(
 								.size(8.dp)
 								.weight(1f)
 						)
+						// Button to close the popup
 						OutlinedIconButton(
 							onClick = {
 								isCardOpen = false
 								menuStatus.collectionPopupIsOpen = false
-									  },
+							},
 							modifier = Modifier
 								.size(52.dp)
 						)
@@ -221,12 +241,13 @@ fun CollectionMenu(
 						}
 					}
 				},
-				confirmButton = {}
+				confirmButton = {}  // No confirmation button
 			)
 		}
 	}
 }
 
+// Preview of the CollectionMenu interface
 @Preview
 @Composable
 fun CollectionPreview()

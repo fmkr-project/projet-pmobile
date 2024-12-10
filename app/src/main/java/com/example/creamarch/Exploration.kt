@@ -37,11 +37,12 @@ import com.example.creamarch.ui.theme.PurpleGrey80
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.random.Random
-
-// Variables pour la génération des créatures
+// Variables for creature generation
 var prevFab = 0
 var fab = 1
-var initialSubListSize=0
+var initialSubListSize = 0
+
+// Function to calculate a random distance using the Fibonacci sequence
 fun distance(): Int {
 	val f3 = prevFab + fab
 	prevFab = fab
@@ -50,13 +51,12 @@ fun distance(): Int {
 	return f4 / 10
 }
 
-// Génération dynamique de la liste des créatures
+// Function to generate a new list of creatures with randomized rarity and distance
 fun generateNewCreatureList(): MutableList<Pair<Creature, Int>> {
 	val newCreatureList: MutableList<Pair<Creature, Int>> = mutableListOf()
-	for (i in (1..22))
-	{
+	for (i in (1..22)) {
 		// Roll a rarity.
-		// 58 % Com, 28 % Unc, 10 % Rar, 4 % Epc
+		// 58% Common, 28% Uncommon, 10% Rare, 4% Epic
 		val random = Random.nextFloat()
 		val rarity: Rarity = if (random < 0.58f) Rarity.Common
 		else if (random < 0.86f) Rarity.Uncommon
@@ -65,47 +65,41 @@ fun generateNewCreatureList(): MutableList<Pair<Creature, Int>> {
 		newCreatureList.add(
 			Pair(
 				first = Dex.species.values.filter { it.rarity == rarity }.random().spawnNewCreature(6 + newCreatureList.size),
-				second = distance()
+				second = distance()  // Generate a random distance for the creature
 			)
 		)
 	}
-	/*
-	val newCreatureList = (1..22).map {
-		Pair(
-			first = Dex.species.values.filter { it.rarity != Rarity.Legendary }.random().spawnNewCreature(5),
-			second = distance()
-		)
-	}.toMutableList()
-*/
+
+	// Ensure legendary creature is added at the correct position
 	val indexLegend = newCreatureList.indexOfFirst { it.second >= legendary.second }
 
 	initialSubListSize = if (indexLegend != -1) indexLegend + 1 else newCreatureList.size
 
-
+	// Add legendary creature if necessary
 	if (indexLegend != -1 && newCreatureList[indexLegend] != legendary) {
 		newCreatureList.add(indexLegend, legendary)
 	}
 	return newCreatureList
 }
 
-// Créature légendaire
+// Legendary creature definition
 val legendary = Pair(
 	first = Dex.species.values.filter { it.rarity == Rarity.Legendary }.random().spawnNewCreature(20),
-	second = 100
+	second = 100  // Legendary creature always has distance value 100
 )
 
-// Repository pour gérer les créatures
+// Creature repository to manage creature list
 object CreatureRepository {
 	private val _creatureList = MutableStateFlow<List<Pair<Creature, Int>>>(emptyList())
 	val creatureList: StateFlow<List<Pair<Creature, Int>>> get() = _creatureList
 
+	// Update the creature list
 	fun updateCreatureList(newList: List<Pair<Creature, Int>>) {
 		_creatureList.value = newList
 	}
 }
 
-
-
+// Function to display a single creature item in the list
 @Composable
 fun CreatureItem(
 	creature: Creature,
@@ -118,6 +112,8 @@ fun CreatureItem(
 	var bacMod = Modifier
 		.fillMaxWidth()
 		.padding(10.dp)
+
+	// Apply background color based on capture status and whether the creature is legendary
 	if (capture) {
 		bacMod = if (legendary) bacMod.background(color = Purple80)
 		else bacMod.background(color = Pink80)
@@ -125,6 +121,7 @@ fun CreatureItem(
 		bacMod = bacMod.background(color = PurpleGrey80)
 	}
 
+	// Card displaying the creature's details (image, name, level, distance)
 	Card(
 		modifier = modifier.clickable(enabled = capture, onClick = onCapture),
 	) {
@@ -147,7 +144,7 @@ fun CreatureItem(
 					fontSize = 28.sp
 				)
 				Text(
-					text = "niv. " + creature.level.toString()
+					text = "Level " + creature.level.toString()
 				)
 			}
 
@@ -160,6 +157,7 @@ fun CreatureItem(
 	}
 }
 
+// Function to display the health bar of a creature
 @Composable
 fun HealthBar(currentHealth: Int, maxHealth: Int, modifier: Modifier = Modifier) {
 	val healthPercentage = (currentHealth / maxHealth.toFloat()).coerceIn(0f, 1f)
@@ -167,23 +165,24 @@ fun HealthBar(currentHealth: Int, maxHealth: Int, modifier: Modifier = Modifier)
 		modifier = modifier
 			.fillMaxWidth()
 			.height(10.dp)
-			.background(Color.Gray) // Couleur de fond de la barre de vie
+			.background(Color.Gray)  // Background color of the health bar
 	) {
 		Box(
 			modifier = Modifier
 				.fillMaxHeight()
-				.fillMaxWidth(healthPercentage) // Largeur en fonction de la santé
-				.background(Color.Green) // Couleur de la barre de vie
+				.fillMaxWidth(healthPercentage)  // Width based on health percentage
+				.background(Color.Green)  // Color of the health bar
 		)
 	}
 }
 
-
+// Initialize creatures when the app starts
 fun initializeCreatures() {
 	val initialList = generateNewCreatureList()
 	CreatureRepository.updateCreatureList(initialList)
 }
 
+// Composable function for the Exploration menu
 @Composable
 fun ExplorationMenu(
 	distanceTracker: DistanceTracker,
@@ -195,10 +194,9 @@ fun ExplorationMenu(
 
 	var lastHealedDistance by remember { mutableIntStateOf(0) }
 
-
+	// Heal creatures every 100 meters
 	if (walkedDistance >= lastHealedDistance + 100) {
 		val healingAmount = 10
-
 
 		playerTeam.forEach { creature ->
 			val newHp = (creature.stats.currentHp + healingAmount).coerceAtMost(creature.stats.maxHp)
@@ -217,46 +215,42 @@ fun ExplorationMenu(
 	var youSurOfChange by remember { mutableStateOf(false) }
 	var whichChange by remember { mutableIntStateOf(0) }
 
+	// Function to capture a creature
 	fun captureCreature(creature: Pair<Creature, Int>) {
 		capturedCreature = creature
-		showDialog = true // Ouvrir la popup de combat
+		showDialog = true  // Open the battle popup
 	}
-/*
-	fun addCreatureToTeam(creature: Creature, index: Int = -1) {
-		if (index == -1) playerTeam.add(creature)
-		else playerTeam[index] = creature
-	}
-*/
-	// Calculer l'index et la distance jusqu'à la prochaine créature
+
+	// Calculate the index and distance to the next creature
 	val nextIndex = nearbyCreatures.indexOfFirst { it.second > walkedDistance }
 	val tillNext = if (nextIndex != -1) nearbyCreatures[nextIndex].second - walkedDistance else 0
 
 	Column(modifier = modifier.padding(16.dp)) {
-		// Afficher la distance parcourue
+		// Display the walked distance
 		Text(
-			text = "Vous avez parcouru $walkedDistance m!",
+			text = "You've walked $walkedDistance meters!",
 			fontSize = 28.sp,
 			modifier = Modifier.padding(bottom = 16.dp)
 		)
 
-		// Afficher la distance jusqu'à la prochaine créature
+		// Display distance to next creature
 		if (tillNext > 0) {
 			Text(
-				text = "Créature suivante dans $tillNext m!",
+				text = "Next creature in $tillNext meters!",
 				fontSize = 20.sp,
 				color = Color.Gray,
 				modifier = Modifier.padding(bottom = 16.dp)
 			)
 		} else {
 			Text(
-				text = "Aucune autre créature proche!",
+				text = "No more creatures nearby!",
 				fontSize = 20.sp,
 				color = Color.Red,
 				modifier = Modifier.padding(bottom = 16.dp)
 			)
 		}
 
-		// Liste des créatures
+		// List of creatures
 		LazyColumn {
 			items(nCreatures) { creature ->
 				creature.let {
@@ -273,11 +267,11 @@ fun ExplorationMenu(
 			}
 		}
 
-		// Code de la pop-up de combat
+		// Combat popup code
 		if (showDialog && capturedCreature != null && !deadTeam()) {
-			if (deadTeam()) showDialog = false
+			// Combat logic with the captured creature
 			AlertDialog(
-				onDismissRequest = { /* Bloquer la fermeture extérieure */ },
+				onDismissRequest = { /* Block outside closing */ },
 				title = { Text("Combat!", fontSize = 30.sp, textAlign = TextAlign.Center) },
 				text = {
 					Column(
@@ -290,7 +284,7 @@ fun ExplorationMenu(
 						)
 						Image(
 							painter = painterResource(id = capturedCreature!!.first.baseData.menuSprite),
-							contentDescription = "Créature à battre",
+							contentDescription = "Creature to defeat",
 							modifier = Modifier
 								.fillMaxWidth()
 								.aspectRatio(1.5f)
@@ -316,7 +310,7 @@ fun ExplorationMenu(
 									Log.d("StepCounterService", "${capturedCreature!!.first.stats.currentHpState.intValue}")
 								}
 						)
-
+						// Display the player's team health bar
 						LazyVerticalGrid(
 							columns = GridCells.Fixed(3),
 							modifier = Modifier
@@ -353,24 +347,24 @@ fun ExplorationMenu(
 						PlayerDex.see(Dex.getSpeciesId(capturedCreature!!.first.baseData))
 						showDialog = false
 					}) {
-						Text("Fuite", fontSize = 30.sp, textAlign = TextAlign.Center)
+						Text("Flee", fontSize = 30.sp, textAlign = TextAlign.Center)
 					}
 				}
 			)
 		}
 
-		// Code pour choisir la créature à garder
+		// Code to select which creature to replace in the team
 		if (changeTeam) {
 			AlertDialog(
 				modifier = Modifier.fillMaxSize(),
-				onDismissRequest = { /* Bloquer la fermeture extérieure */ },
+				onDismissRequest = { /* Block outside closing */ },
 				title = {
 					Text(
 						text = buildAnnotatedString {
-							append("Quelle créature voulez-vous remplacer par ")
+							append("Which creature do you want to replace with ")
 							withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
 								append(capturedCreature!!.first.baseData.name)
-								append(" niv ")
+								append(" level ")
 								append(capturedCreature!!.first.level.toString())
 							}
 							append("?")
@@ -397,15 +391,15 @@ fun ExplorationMenu(
 				},
 				confirmButton = {
 					Button(onClick = { changeTeam = false }) {
-						Text(text = "Aucune")
+						Text(text = "None")
 					}
 				}
 			)
 		}
 
-		// Popup pour s'assurer du changement de créature
+		// Popup to confirm creature swap
 		if (youSurOfChange) {
-			Dialog(onDismissRequest = { /* Bloquer la fermeture extérieure */ }) {
+			Dialog(onDismissRequest = { /* Block outside closing */ }) {
 				Column(
 					modifier = Modifier
 						.fillMaxHeight(0.4f)
@@ -414,7 +408,7 @@ fun ExplorationMenu(
 					verticalArrangement = Arrangement.SpaceEvenly
 				) {
 					Text(
-						text = "Etes-vous sûr de votre choix?",
+						text = "Are you sure about your choice?",
 						fontSize = 52.sp,
 						lineHeight = 52.sp
 					)
@@ -427,14 +421,14 @@ fun ExplorationMenu(
 							changeTeam = false
 							youSurOfChange = false
 						}) {
-							Text(text = "Oui", fontSize = 30.sp)
+							Text(text = "Yes", fontSize = 30.sp)
 						}
 
 						Button(onClick = {
 							youSurOfChange = false
 							changeTeam = true
 						}) {
-							Text(text = "Non", fontSize = 30.sp)
+							Text(text = "No", fontSize = 30.sp)
 						}
 					}
 				}
@@ -442,4 +436,3 @@ fun ExplorationMenu(
 		}
 	}
 }
-
