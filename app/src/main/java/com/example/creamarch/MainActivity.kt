@@ -4,6 +4,7 @@ import DistanceTracker
 import LocationService
 import android.Manifest
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -16,6 +17,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import com.example.creamarch.ui.theme.CreamarchTheme
+import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken
+import com.google.gson.Gson
 
 class MainActivity : ComponentActivity() {
 	private lateinit var distanceTracker: DistanceTracker
@@ -25,8 +28,11 @@ class MainActivity : ComponentActivity() {
 	@RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
+		//clearCreatureListFromPreferences(this)
 		initializePlayerTeam(this)
-		initializeCreatures()
+		val restoredCreatures = loadCreatureListFromPreferences(this)
+		CreatureRepository.updateCreatureList(restoredCreatures)
+
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 			if (ActivityCompat.checkSelfPermission(
@@ -79,6 +85,47 @@ class MainActivity : ComponentActivity() {
 			}
 		}
 	}
+
+	fun saveCreatureListToPreferences(context: Context, creatureList: List<Pair<Creature, Int>>) {
+		val sharedPreferences = context.getSharedPreferences("CreaturePrefs", Context.MODE_PRIVATE)
+		val editor = sharedPreferences.edit()
+
+		// Convertir la liste des créatures en une chaîne JSON
+		val json = Gson().toJson(creatureList)
+		editor.putString("creatureList", json)
+		editor.apply()
+	}
+
+	fun loadCreatureListFromPreferences(context: Context): List<Pair<Creature, Int>> {
+		val sharedPreferences = context.getSharedPreferences("CreaturePrefs", Context.MODE_PRIVATE)
+		val json = sharedPreferences.getString("creatureList", null)
+
+		// Si la liste n'existe pas, on génère une nouvelle liste
+		return if (json != null) {
+			Log.d("test", "liste")
+			Log.d("test", "JSON chargé : $json")
+			val creatureListType = object : TypeToken<List<Pair<Creature, Int>>>() {}.type
+			Gson().fromJson(json, creatureListType)
+		} else {
+			Log.d("test", "pas de liste")
+			// Générer une nouvelle liste si aucune donnée n'est trouvée
+			val newCreatureList = generateNewCreatureList()
+			CreatureRepository.updateCreatureList(newCreatureList)
+			newCreatureList
+		}
+	}
+
+	fun clearCreatureListFromPreferences(context: Context) {
+		val sharedPreferences = context.getSharedPreferences("CreaturePrefs", Context.MODE_PRIVATE)
+		val editor = sharedPreferences.edit()
+
+		// Effacer la liste des créatures
+		editor.clear()
+		editor.apply()
+
+		Log.d("test", "Liste des créatures effacée")
+	}
+
 
 	private fun requestActivityRecognitionPermission() {
 		registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
@@ -138,6 +185,7 @@ class MainActivity : ComponentActivity() {
 	override fun onStop() {
 		super.onStop()
 		savePlayerTeamState(this)
+		saveCreatureListToPreferences(this, CreatureRepository.creatureList.value)
 		PlayerDex.savePlayerDex(this)
 	}
 
