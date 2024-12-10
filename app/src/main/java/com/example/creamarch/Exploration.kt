@@ -235,7 +235,7 @@ fun ExplorationMenu(
 		// Afficher la distance parcourue
 		Text(
 			text = "Vous avez parcouru $walkedDistance m!",
-			fontSize = 30.sp,
+			fontSize = 28.sp,
 			modifier = Modifier.padding(bottom = 16.dp)
 		)
 
