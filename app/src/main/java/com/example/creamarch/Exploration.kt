@@ -52,13 +52,31 @@ fun distance(): Int {
 
 // Génération dynamique de la liste des créatures
 fun generateNewCreatureList(): MutableList<Pair<Creature, Int>> {
+	val newCreatureList: MutableList<Pair<Creature, Int>> = mutableListOf()
+	for (i in (1..22))
+	{
+		// Roll a rarity.
+		// 58 % Com, 28 % Unc, 10 % Rar, 4 % Epc
+		val random = Random.nextFloat()
+		val rarity: Rarity = if (random < 0.58f) Rarity.Common
+		else if (random < 0.86f) Rarity.Uncommon
+		else if (random < 0.96f) Rarity.Rare
+		else Rarity.Epic
+		newCreatureList.add(
+			Pair(
+				first = Dex.species.values.filter { it.rarity == rarity }.random().spawnNewCreature(6 + newCreatureList.size),
+				second = distance()
+			)
+		)
+	}
+	/*
 	val newCreatureList = (1..22).map {
 		Pair(
 			first = Dex.species.values.filter { it.rarity != Rarity.Legendary }.random().spawnNewCreature(5),
 			second = distance()
 		)
 	}.toMutableList()
-
+*/
 	val indexLegend = newCreatureList.indexOfFirst { it.second >= legendary.second }
 
 	initialSubListSize = if (indexLegend != -1) indexLegend + 1 else newCreatureList.size
