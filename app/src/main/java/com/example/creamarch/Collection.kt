@@ -148,7 +148,7 @@ fun CollectionMenu(
 					Column(
 						modifier = Modifier
 							.fillMaxWidth()
-							.fillMaxHeight(0.5f)
+							.fillMaxHeight(0.6f)
 							.padding(20.dp),
 						horizontalAlignment = Alignment.CenterHorizontally,
 						verticalArrangement = Arrangement.Center
